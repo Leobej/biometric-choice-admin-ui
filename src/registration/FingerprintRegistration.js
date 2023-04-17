@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 
-function Registration() {
+function FingerprintRegistration() {
   return (
     <div className="flex flex-col items-center justify-center h-screen">
       <h1 className="text-3xl font-bold mb-6">Fingerprint Registration</h1>
@@ -83,4 +83,4 @@ function Registration() {
   );
 }
 
-export default Registration;
+export default FingerprintRegistration;
