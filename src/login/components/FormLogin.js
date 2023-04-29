@@ -15,11 +15,12 @@ const FormLogin = () => {
     event.preventDefault();
 
     try {
+      console.log("getting something")
       const response = await axios.post(
         "http://localhost:8080/authenticate",
         {
           username,
-          password,
+          password
         },
         {
           withCredentials: true,
@@ -30,8 +31,9 @@ const FormLogin = () => {
       localStorage.setItem("token", token);
       navigate("/registration");
     } catch (error) {
-      setError("An error occurred. Please try again.");
-      console.log("error");
+      console.log(error)
+      // setError("An error occurred. Please try again.");
+      // console.log("error");
     }
   };
 
