@@ -32,8 +32,6 @@ const FormLogin = () => {
       navigate("/registration");
     } catch (error) {
       console.log(error)
-      // setError("An error occurred. Please try again.");
-      // console.log("error");
     }
   };
 
