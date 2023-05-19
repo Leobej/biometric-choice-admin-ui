@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-
+import { useNavigate } from "react-router";
 const CreateElectionForm = () => {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -9,30 +9,47 @@ const CreateElectionForm = () => {
   const [candidateId, setCandidateId] = useState("");
   const [candidates, setCandidates] = useState([]);
 
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResult, setSearchResult] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCandidate, setSelectedCandidate] = useState(null);
+
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      navigate("/login");
+    }
+  }, [navigate]);
+
   useEffect(() => {
     const fetchCandidates = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        const response = await axios.get("http://localhost:8080/candidates", {
+      const token = localStorage.getItem("token");
+      const response = await axios.get(
+        `http://localhost:8080/candidates/searchName?query=${searchQuery}`,
+        {
           headers: {
             "Content-Type": "multipart/form-data",
             Authorization: `Bearer ${token}`,
           },
-        });
-        console.log(response.data);
-        return response.data;
-      } catch (error) {
-        console.error("Error fetching candidates:", error);
+        }
+      );
+
+      if (response.data.length > 0) {
+        setCandidates(response.data);
+        console.log(candidates);
+      } else {
+        setCandidates([]);
       }
     };
 
-    const fetchAndSetCandidates = async () => {
-      const fetchedCandidates = await fetchCandidates();
-      setCandidates(fetchedCandidates);
-    };
+    const timer = setTimeout(() => {
+      fetchCandidates();
+    }, 300);
 
-    fetchAndSetCandidates();
-  }, []);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
 
   const resetForm = () => {
     setName("");
@@ -43,6 +60,12 @@ const CreateElectionForm = () => {
 
   const handleSubmit = (event) => {
     event.preventDefault();
+  };
+
+  const handleCandidateClick = (candidate) => {
+    setSearchQuery(`${candidate.firstname} ${candidate.lastname}`);
+    setSelectedCandidate(candidate);
+    setCandidates([]);
   };
 
   return (
@@ -84,21 +107,28 @@ const CreateElectionForm = () => {
         >
           Candidate:
         </label>
-        <select
+        <input
+          type="text"
           id="candidate"
           name="candidate"
-          value={candidateId}
-          onChange={(event) => setCandidateId(event.target.value)}
+          value={searchQuery}
+          onChange={(event) => setSearchQuery(event.target.value)}
           required
           className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-        >
-          <option value="">Select a candidate</option>
+          placeholder="Search for a candidate"
+        />
+
+        <ul className="candidate-list mt-2">
           {candidates.map((candidate) => (
-            <option key={candidate.candidateId} value={candidate.candidateId}>
+            <li
+              key={candidate.candidateId}
+              onClick={() => handleCandidateClick(candidate)}
+              className="cursor-pointer hover:bg-gray-200 px-3 py-1"
+            >
               {candidate.firstname} {candidate.lastname}
-            </option>
+            </li>
           ))}
-        </select>
+        </ul>
       </div>
 
       <div className="mb-4">

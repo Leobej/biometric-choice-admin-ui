@@ -1,39 +1,80 @@
 import React from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useState } from "react";
 import ButtonsForm from "./ButtonsForm";
 import Error from "./Error";
 import axios from "axios";
+import { useUserRole } from "./../../context/UserRoleContext";
+import { useEffect } from "react";
 const FormLogin = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-
+  const { setUserRole } = useUserRole(); 
   const navigate = useNavigate();
+  localStorage.setItem("userRole", "");
 
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-
-    try {
-      console.log("getting something")
-      const response = await axios.post(
-        "http://localhost:8080/authenticate",
-        {
-          username,
-          password
-        },
-        {
-          withCredentials: true,
-        }
-      );
-
-      const token = response.headers.authorization.split(" ")[1];
-      localStorage.setItem("token", token);
-      navigate("/registration");
-    } catch (error) {
-      console.log(error)
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    console.log("Token:")
+    if (token==="") {
+      navigate("/logged-in");
     }
+  }, [navigate]);
+
+  const fetchUserRole = async (username, setUserRole) => {
+    try {
+      const response = await axios.get(`http://localhost:8080/user/user-role/${username}`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+      });
+      console.log(response.data);
+      localStorage.setItem("userRole", response.data);
+      setUserRole(response.data);
+      console.log(localStorage.getItem("userRole"));
+    } catch (error) {
+      console.error("Error fetching user role:", error);
+    }
+
+    
   };
+  
+
+const handleSubmit = async (event) => {
+  event.preventDefault();
+
+  try {
+    const response = await axios.post(
+      "http://localhost:8080/authenticate",
+      {
+        username,
+        password,
+      },
+      {
+        withCredentials: true,
+      }
+    );
+
+    const token = response.headers.authorization.split(" ")[1];
+    localStorage.setItem("token", token);
+    console.log(response);
+ 
+    await fetchUserRole(username, setUserRole);
+ 
+    const userRole = localStorage.getItem("userRole");
+    console.log(userRole);
+    if (userRole === 'ADMIN') {
+      navigate("/admin");
+    } else if (userRole === 'USER') {
+      navigate("/registration");
+    } else {
+      setError("Invalid username or password");
+    }
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+
 
   return (
     <form className="space-y-6" onSubmit={handleSubmit}>

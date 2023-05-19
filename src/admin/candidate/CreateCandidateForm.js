@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
-
-
+import { useEffect } from "react";
+import { useNavigate } from "react-router";
 const CreateCandidateForm = () => {
 
   const [firstName, setFirstName] = useState("");
@@ -9,6 +9,15 @@ const CreateCandidateForm = () => {
   const [party, setParty] = useState("");
   const [position, setPosition] = useState("");
   const [image, setImage] = useState("");
+
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      navigate("/login");
+    }
+  }, [navigate]);
 
   const resetForm = () => {
     setFirstName("");
