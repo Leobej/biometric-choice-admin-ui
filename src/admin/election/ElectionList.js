@@ -4,6 +4,8 @@ import ElectionForm from "./ElectionForm";
 import ElectionTable from "./ElectionTable";
 import PageNavigation from "./PageNavigation";
 import EditElectionModal from "./EditElectionModal";
+import DeleteConfirmationModal from "./DeleteConfirmationModal";
+
 const ElectionsList = () => {
   const [elections, setElections] = useState([]);
   const [totalPages, setTotalPages] = useState(0);
@@ -14,47 +16,25 @@ const ElectionsList = () => {
   const [description, setDescription] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
-  const [candidateId, setCandidateId] = useState("");
-  const [candidates, setCandidates] = useState([]);
-
-  const [searchQuery, setSearchQuery] = useState("");
-  const [searchResult, setSearchResult] = useState(null);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCandidate, setSelectedCandidate] = useState(null);
 
   const [selectedElection, setSelectedElection] = useState(null);
+
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const handleDeleteClick = () => {
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleDeleteConfirm = () => {
+    console.log("Deleting item...");
+    setIsDeleteModalOpen(false);
+  };
 
   useEffect(() => {
     fetchElections();
   }, []);
-
-  // useEffect(() => {
-  //   const fetchCandidates = async () => {
-  //     const token = localStorage.getItem("token");
-  //     const response = await axios.get(
-  //       `http://localhost:8080/candidates/searchName?query=${searchQuery}`,
-  //       {
-  //         headers: {
-  //           "Content-Type": "multipart/form-data",
-  //           Authorization: `Bearer ${token}`,
-  //         },
-  //       }
-  //     );
-
-  //     if (response.data.length > 0) {
-  //       setCandidates(response.data);
-  //       console.log(candidates);
-  //     } else {
-  //       setCandidates([]);
-  //     }
-  //   };
-
-  //   const timer = setTimeout(() => {
-  //     fetchCandidates();
-  //   }, 300);
-
-  //   return () => clearTimeout(timer);
-  // }, [searchQuery]);
 
   const resetForm = () => {
     setName("");
@@ -76,7 +56,7 @@ const ElectionsList = () => {
 
   const handleDelete = () => {
     if (selectedElection) {
-      // Put your delete logic here
+      <DeleteConfirmationModal></DeleteConfirmationModal>;
       console.log(`Deleting election with ID: ${selectedElection.id}`);
     }
   };
@@ -94,17 +74,12 @@ const ElectionsList = () => {
     closeModal();
   };
 
-  const [isEditModalOpen, setIsEditModalOpen] = React.useState(false);
+  const onDelete = () => {};
 
-  const handleEditClick = (election) => {
-    setSelectedElection(election);
-    setIsEditModalOpen(true);
-  };
-
-  const fetchElections = async (page = 0, size = 10) => {
+  const deleteElection = async () => {
     const token = localStorage.getItem("token");
-    const response = await axios.get(
-      `http://localhost:8080/elections?page=${page}&size=${size}`,
+    const response = await axios.delete(
+      `http://localhost:8080/elections/${selectedElection.id}`,
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -112,7 +87,26 @@ const ElectionsList = () => {
       }
     );
     console.log(response);
+  };
 
+  const [isEditModalOpen, setIsEditModalOpen] = React.useState(false);
+
+  const handleEditClick = (election) => {
+    setSelectedElection(election);
+    setIsEditModalOpen(true);
+  };
+
+  const fetchElections = async (page = 0, size = 10, searchQuery = '') => {
+    const token = localStorage.getItem("token");
+    const response = await axios.get(
+      `http://localhost:8080/elections?page=${page}&size=${size}&description=${searchQuery}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+  
     if (response.data.content.length > 0) {
       setElections(response.data.content);
       setTotalPages(response.data.totalPages);
@@ -121,6 +115,7 @@ const ElectionsList = () => {
       setElections([]);
     }
   };
+  
 
   const handlePageNavigation = (newPage) => {
     console.log(newPage);
@@ -155,6 +150,22 @@ const ElectionsList = () => {
 
   return (
     <div className="flex flex-col justify-between items-center min-h-screen">
+      <div className="py-4">
+        <input
+          type="text"
+          placeholder="Search by description..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="rounded border px-2 py-1"
+        />
+        <button
+          onClick={() => fetchElections(0, 10, searchQuery)}
+          className="ml-2 bg-blue-500 text-white px-4 py-2 rounded"
+        >
+          Search
+        </button>
+      </div>
+
       <div className="flex justify-between w-full px-10 py-5 bg-blue-500 text-white">
         <button
           onClick={handleAdd}
@@ -171,7 +182,7 @@ const ElectionsList = () => {
               Edit
             </button>
             <button
-              onClick={handleDelete}
+              onClick={() => handleDeleteClick(selectedElection)}
               className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
             >
               Delete
@@ -210,6 +221,12 @@ const ElectionsList = () => {
         totalPages={totalPages}
         currentPage={currentPage}
         handlePageNavigation={handlePageNavigation}
+      />
+
+      <DeleteConfirmationModal
+        isOpen={isDeleteModalOpen}
+        closeModal={() => setIsDeleteModalOpen(false)}
+        handleDelete={handleDeleteConfirm}
       />
     </div>
   );
