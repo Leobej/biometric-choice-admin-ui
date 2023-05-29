@@ -13,6 +13,7 @@ import ElectionsList from "./admin/election/ElectionList";
 import Navigation from "./navigation/Navigation";
 import EmptyRoute from "./routes/EmptyRoute";
 import LoggedIn from "./home/LoggedIn";
+import CandidatesList from "./admin/candidate/CandidatesList";
 function App() {
   return (
     <Router>
@@ -45,6 +46,14 @@ function App() {
             element={
               <RoleBasedAccess roles={["ADMIN"]}>
                 <ElectionsList />
+              </RoleBasedAccess>
+            }
+          />
+                 <Route
+            path="/candidates"
+            element={
+              <RoleBasedAccess roles={["ADMIN"]}>
+                <CandidatesList />
               </RoleBasedAccess>
             }
           />
