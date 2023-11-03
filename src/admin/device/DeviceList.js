@@ -6,11 +6,11 @@ import GenericForm from "../genericlistcomponents/GenericForm";
 import PageNavigation from "./PageNavigation";
 import ActionBar from "../genericlistcomponents/ActionBar";
 
-const CandidatesList = () => {
-  const [candidates, setCandidates] = useState([]);
+const DevicesList = () => {
+  const [devices, setDevices] = useState([]);
   const [totalPages, setTotalPages] = useState(0);
   const [currentPage, setCurrentPage] = useState(0);
-  const [selectedCandidate, setSelectedCandidate] = useState(null);
+  const [selectedDevice, setSelectedDevice] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalType, setModalType] = useState(null); // 'add', 'edit', or 'delete'
   const [searchQuery, setSearchQuery] = useState("");
@@ -22,43 +22,43 @@ const CandidatesList = () => {
 
   const onRowClick = (item) => {
     console.log("Row clicked:", item);
-    setSelectedCandidate(item);
+    setSelectedDevice(item);
   };
 
   const onEditClick = () => {
-    console.log("Edit clicked, selected candidate:", selectedCandidate);
-    if (selectedCandidate) {
+    console.log("Edit clicked, selected device:", selectedDevice);
+    if (selectedDevice) {
       setModalType("edit");
       setIsModalOpen(true);
     } else {
-      alert("Please select a candidate to edit.");
+      alert("Please select a device to edit.");
     }
   };
 
   const onDeleteClick = () => {
-    if (selectedCandidate) {
+    if (selectedDevice) {
       setModalType("delete");
       setIsModalOpen(true);
     } else {
-      alert("Please select a candidate to delete.");
+      alert("Please select a device to delete.");
     }
   };
 
   const fields = [
-    { label: "First Name", key: "firstname" },
-    { label: "Last Name", key: "lastname" },
-    { label: "Party", key: "party" },
-    { label: "Description", key: "description" },
+    { label: "Device Name", key: "name" },
+    { label: "Device Type", key: "type" },
+    { label: "Device Status", key: "status" },
+    // ...other fields
   ];
 
   useEffect(() => {
-    fetchCandidates();
+    fetchDevices();
   }, []);
 
-  const fetchCandidates = async (page = 0, size = 10, searchQuery = "") => {
+  const fetchDevices = async (page = 0, size = 10, searchQuery = "") => {
     const token = localStorage.getItem("token");
     const response = await axios.get(
-      `http://localhost:8080/candidates?page=${page}&size=${size}&query=${searchQuery}`,
+      `http://localhost:8080/devices?page=${page}&size=${size}&query=${searchQuery}`,
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -67,76 +67,64 @@ const CandidatesList = () => {
     );
 
     if (response.data.content.length > 0) {
-      setCandidates(response.data.content);
+      setDevices(response.data.content);
       setTotalPages(response.data.totalPages);
       setCurrentPage(page);
     } else {
-      setCandidates([]);
+      setDevices([]);
     }
   };
 
   const handleModalClose = () => {
     setIsModalOpen(false);
     setModalType(null);
-    setSelectedCandidate(null);
+    setSelectedDevice(null);
   };
 
   const handleSave = async (values) => {
-    // Save candidate logic...
+    // Save device logic...
     handleModalClose();
-    fetchCandidates();
+    fetchDevices();
   };
 
   const handleDeleteConfirm = async () => {
-    // Delete candidate logic...
+    // Delete device logic...
     handleModalClose();
-    fetchCandidates();
+    fetchDevices();
   };
 
   const handleClearSearch = () => {
     setSearchQuery(""); // Reset the search query
-    fetchCandidates(); // Fetch the initial list of candidates
+    fetchDevices(); // Fetch the initial list of devices
   };
 
   const footerMap = {
     add: (
       <>
-        <button type="submit" form="generic-form" /* ...other attributes */>
+        <button type="submit" form="generic-form">
           Save
         </button>
-        <button
-          type="button"
-          onClick={handleModalClose} /* ...other attributes */
-        >
+        <button type="button" onClick={handleModalClose}>
           Cancel
         </button>
       </>
     ),
     edit: (
       <>
-        <button type="submit" form="generic-form" /* ...other attributes */>
+        <button type="submit" form="generic-form">
           Save
         </button>
-        <button
-          type="button"
-          onClick={handleModalClose} /* ...other attributes */
-        >
+        <button type="button" onClick={handleModalClose}>
           Cancel
         </button>
       </>
     ),
     delete: (
       <>
-        <button
-          type="button"
-          onClick={handleDeleteConfirm} /* ...other attributes */
-        >
+        <button type="button" onClick={handleDeleteConfirm}>
           Delete
         </button>
-        <button
-          type="button"
-          onClick={handleModalClose} /* ...other attributes */
-        >
+        <button type="button" onClick={handleModalClose}>
           Cancel
         </button>
       </>
@@ -149,12 +137,12 @@ const CandidatesList = () => {
         <div className="relative flex items-center">
           <input
             type="text"
-            placeholder="Search by name, party, or any other field..."
+            placeholder="Search by name, type, or any other field..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="rounded-l border px-2 py-1"
           />
-          {searchQuery && ( // Only show the clear button if there's a search query
+          {searchQuery && (
             <button
               onClick={handleClearSearch}
               className="absolute inset-y-0 right-0 flex items-center justify-center bg-red-500 w-8 rounded-r focus:outline-none"
@@ -164,7 +152,7 @@ const CandidatesList = () => {
           )}
         </div>
         <button
-          onClick={() => fetchCandidates(0, 10, searchQuery)}
+          onClick={() => fetchDevices(0, 10, searchQuery)}
           className="ml-2 bg-blue-500 text-white px-4 py-2 rounded"
         >
           Search
@@ -177,27 +165,25 @@ const CandidatesList = () => {
         onDeleteClick={onDeleteClick}
       />
       <GenericTable
-        data={candidates}
+        data={devices}
         onRowClick={onRowClick}
-        selectedData={selectedCandidate}
+        selectedData={selectedDevice}
         columns={fields}
-        idField="candidateId"
+        idField="deviceId"
       />
 
       {isModalOpen && (
         <GenericModal
           isOpen={isModalOpen}
           closeModal={handleModalClose}
-          title={`${
-            modalType.charAt(0).toUpperCase() + modalType.slice(1)
-          } Candidate`}
+          title={`${modalType.charAt(0).toUpperCase() + modalType.slice(1)} Device`}
           footer={footerMap[modalType]}
         >
           {modalType === "delete" ? (
-            <p>Are you sure you want to delete this candidate?</p>
+            <p>Are you sure you want to delete this device?</p>
           ) : (
             <GenericForm
-              initialValues={modalType === "edit" ? selectedCandidate : {}}
+              initialValues={modalType === "edit" ? selectedDevice : {}}
               onSubmit={handleSave}
               fields={fields.map((field) => ({
                 ...field,
@@ -207,15 +193,15 @@ const CandidatesList = () => {
             />
           )}
         </GenericModal>
-      )}
+     )}
 
       <PageNavigation
         totalPages={totalPages}
         currentPage={currentPage}
-        handlePageNavigation={(newPage) => fetchCandidates(newPage, 10)}
+        handlePageNavigation={(newPage) => fetchDevices(newPage, 10)}
       />
     </div>
   );
 };
 
-export default CandidatesList;
+export default DevicesList;

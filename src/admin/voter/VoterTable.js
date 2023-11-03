@@ -1,6 +1,6 @@
 import React from "react";
 
-const CandidateTable = ({ candidates, handleRowClick, selectedCandidate }) => {
+const VoterTable = ({ voters, handleRowClick, selectedVoter }) => {
   return (
     <div className="flex flex-col items-center justify-center">
       <table className="table-auto border-collapse border border-gray-800 mt-5">
@@ -13,30 +13,42 @@ const CandidateTable = ({ candidates, handleRowClick, selectedCandidate }) => {
               Last Name
             </th>
             <th className="border border-gray-600 px-4 py-2 text-gray-800">
-              PartyQ
+              Voter ID
+            </th>
+            <th className="border border-gray-600 px-4 py-2 text-gray-800">
+              CNP
+            </th>
+            <th className="border border-gray-600 px-4 py-2 text-gray-800">
+              Created At
             </th>
           </tr>
         </thead>
         <tbody>
-          {candidates.map((candidate) => (
+          {voters.map((voter) => (
             <tr
-              key={candidate.candidateId}
-              onClick={() => handleRowClick(candidate)}
+              key={voter.voterId}
+              onClick={() => handleRowClick(voter)}
               className={`${
-                selectedCandidate &&
-                selectedCandidate.candidateId === candidate.candidateId
+                selectedVoter &&
+                selectedVoter.voterId === voter.voterId
                   ? "bg-blue-200 cursor-pointer"
                   : "cursor-pointer"
               }`}
             >
               <td className="border border-gray-600 px-4 py-2 text-gray-800">
-                {candidate.firstame}
+                {voter.firstName}
               </td>
               <td className="border border-gray-600 px-4 py-2 text-gray-800">
-                {candidate.lastname}
+                {voter.lastName}
               </td>
               <td className="border border-gray-600 px-4 py-2 text-gray-800">
-                {candidate.party}
+                {voter.voterId}
+              </td>
+              <td className="border border-gray-600 px-4 py-2 text-gray-800">
+                {voter.cnp}
+              </td>
+              <td className="border border-gray-600 px-4 py-2 text-gray-800">
+                {voter.createdAt}
               </td>
             </tr>
           ))}
@@ -46,4 +58,4 @@ const CandidateTable = ({ candidates, handleRowClick, selectedCandidate }) => {
   );
 };
 
-// export default CandidateTable;
+export default VoterTable;

@@ -12,18 +12,15 @@ function FingerprintRegistration() {
 
   const [fingerprintId, setFingerprintId] = useState(0);
   const [deviceId, setDeviceId] = useState("REG_1");
-  const [password, setPassword] = useState("password");
+  const [password, setPassword] = useState("");
   const [registerStatus, setRegisterStatus] = useState("pending");
 
-  useEffect(
-    () => {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        navigate("/login");
-       } 
-    },
-    [navigate],
-  );
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      navigate("/login");
+    }
+  }, [navigate]);
 
   const sendNextFingerprint = async (event) => {
     event.preventDefault();
@@ -67,17 +64,19 @@ function FingerprintRegistration() {
   const handleSubmit = async (event) => {
     event.preventDefault();
     setRegisterStatus("pending");
+    console.log(localStorage.getItem("token"));
     try {
       const token = localStorage.getItem("token");
+   
       const response = await axios.post(
-        `/voters`,
+        `/voters/register`,
         {
-          firstname: firstname,
-          lastname: lastname,
+          firstname,
+          lastname,
           cnp,
-          fingerprint: fingerprintId,
+          fingerprintId,
           createdAt,
-          password,
+          password: cnp,
         },
         {
           withCredentials: true,
@@ -94,6 +93,15 @@ function FingerprintRegistration() {
       console.log(error);
       setRegisterStatus("error");
     }
+
+    console.log({
+      firstname,
+      lastname,
+      cnp,
+      fingerprintId,
+      createdAt,
+      password,
+    });
 
     setFirstName("");
     setLastName("");
@@ -155,7 +163,7 @@ function FingerprintRegistration() {
             type="text"
             placeholder="1234567890123"
             value={cnp}
-            onChange={(e) => setCnp(e.target.value)}
+            onChange={(e) => {setCnp(e.target.value); setPassword(e.target.value)}}
           />
         </div>
         <div className="mb-4">

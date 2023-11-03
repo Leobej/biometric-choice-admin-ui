@@ -1,102 +1,64 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import ElectionForm from "./ElectionForm";
-import ElectionTable from "./ElectionTable";
+import GenericTable from "../genericlistcomponents/GenericTable";
+import GenericModal from "../genericlistcomponents/GenericModal";
+import GenericForm from "../genericlistcomponents/GenericForm";
 import PageNavigation from "./PageNavigation";
-import EditElectionModal from "./EditElectionModal";
-import DeleteConfirmationModal from "./DeleteConfirmationModal";
+import ActionBar from "../genericlistcomponents/ActionBar";
 
 const ElectionsList = () => {
   const [elections, setElections] = useState([]);
   const [totalPages, setTotalPages] = useState(0);
   const [currentPage, setCurrentPage] = useState(0);
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-
-  const [name, setName] = useState("");
-  const [description, setDescription] = useState("");
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
-
   const [selectedElection, setSelectedElection] = useState(null);
-
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalType, setModalType] = useState(null); // 'add', 'edit', or 'delete'
   const [searchQuery, setSearchQuery] = useState("");
 
-  const handleDeleteClick = () => {
-    setIsDeleteModalOpen(true);
+  const onAddClick = () => {
+    setModalType("add");
+    setIsModalOpen(true);
   };
 
-  const handleDeleteConfirm = () => {
-    console.log("Deleting item...");
-    setIsDeleteModalOpen(false);
+  const onRowClick = (item) => {
+    setSelectedElection(item);
   };
+
+  const onEditClick = () => {
+    if (selectedElection) {
+      setModalType("edit");
+      setIsModalOpen(true);
+    } else {
+      alert("Please select an election to edit.");
+    }
+  };
+
+  const onDeleteClick = () => {
+    if (selectedElection) {
+      setModalType("delete");
+      setIsModalOpen(true);
+    } else {
+      alert("Please select an election to delete.");
+    }
+  };
+
+  const handleClearSearch = () => {
+    setSearchQuery("");
+    fetchElections();
+  };
+
+  const fields = [
+    { label: "Description", key: "description" },
+    { label: "Created at", key: "createdAt" },
+    { label: "Location", key: "location" },
+];
+
 
   useEffect(() => {
     fetchElections();
   }, []);
 
-  const resetForm = () => {
-    setName("");
-    setDescription("");
-    setStartDate("");
-    setEndDate("");
-  };
-
-  const handleSubmit = (event) => {
-    event.preventDefault();
-  };
-
-  const handleEdit = () => {
-    if (selectedElection) {
-      // Put your edit logic here
-      console.log(`Editing election with ID: ${selectedElection.id}`);
-    }
-  };
-
-  const handleDelete = () => {
-    if (selectedElection) {
-      <DeleteConfirmationModal></DeleteConfirmationModal>;
-      console.log(`Deleting election with ID: ${selectedElection.id}`);
-    }
-  };
-
-  const handleAdd = () => {
-    setIsAddModalOpen(true);
-  };
-
-  const closeModal = () => {
-    setIsAddModalOpen(false);
-  };
-
-  const saveElection = () => {
-    // Implement save election logic here
-    closeModal();
-  };
-
-  const onDelete = () => {};
-
-  const deleteElection = async () => {
-    const token = localStorage.getItem("token");
-    const response = await axios.delete(
-      `http://localhost:8080/elections/${selectedElection.id}`,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
-    console.log(response);
-  };
-
-  const [isEditModalOpen, setIsEditModalOpen] = React.useState(false);
-
-  const handleEditClick = (election) => {
-    setSelectedElection(election);
-    setIsEditModalOpen(true);
-  };
-
-  const fetchElections = async (page = 0, size = 10, searchQuery = '') => {
+  const fetchElections = async (page = 0, size = 10, searchQuery = "") => {
     const token = localStorage.getItem("token");
     const response = await axios.get(
       `http://localhost:8080/elections?page=${page}&size=${size}&description=${searchQuery}`,
@@ -106,7 +68,7 @@ const ElectionsList = () => {
         },
       }
     );
-  
+
     if (response.data.content.length > 0) {
       setElections(response.data.content);
       setTotalPages(response.data.totalPages);
@@ -115,49 +77,91 @@ const ElectionsList = () => {
       setElections([]);
     }
   };
-  
 
-  const handlePageNavigation = (newPage) => {
-    console.log(newPage);
-    fetchElections(newPage, 10);
+  const handleModalClose = () => {
+    setIsModalOpen(false);
+    setModalType(null);
+    setSelectedElection(null);
   };
 
-  const handleRowClick = (election) => {
-    console.log(election);
-    setSelectedElection(election);
+  const handleSave = async (values) => {
+    // Save election logic...
+    handleModalClose();
+    fetchElections();
   };
 
-  const renderPageNavigation = () => {
-    const pages = [];
-    for (let i = 0; i < totalPages; i++) {
-      pages.push(
-        <button
-          key={i}
-          onClick={() => handlePageNavigation(i)}
-          className={`${
-            i === currentPage
-              ? "bg-blue-500 text-white"
-              : "bg-white text-blue-500"
-          } border border-blue-500 px-4 py-2 mx-1 rounded`}
-        >
-          {i + 1}
+  const handleDeleteConfirm = async () => {
+    // Delete election logic...
+    handleModalClose();
+    fetchElections();
+  };
+
+  const footerMap = {
+    add: (
+      <>
+        <button type="submit" form="generic-form" /* ...other attributes */>
+          Save
         </button>
-      );
-    }
-
-    return <div className="mt-4">{pages}</div>;
+        <button
+          type="button"
+          onClick={handleModalClose} /* ...other attributes */
+        >
+          Cancel
+        </button>
+      </>
+    ),
+    edit: (
+      <>
+        <button type="submit" form="generic-form" /* ...other attributes */>
+          Save
+        </button>
+        <button
+          type="button"
+          onClick={handleModalClose} /* ...other attributes */
+        >
+          Cancel
+        </button>
+      </>
+    ),
+    delete: (
+      <>
+        <button
+          type="button"
+          onClick={handleDeleteConfirm} /* ...other attributes */
+        >
+          Delete
+        </button>
+        <button
+          type="button"
+          onClick={handleModalClose} /* ...other attributes */
+        >
+          Cancel
+        </button>
+      </>
+    ),
   };
+
 
   return (
-    <div className="flex flex-col justify-between items-center min-h-screen">
-      <div className="py-4">
-        <input
-          type="text"
-          placeholder="Search by description..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="rounded border px-2 py-1"
-        />
+    <div className="flex flex-col justify-start items-center min-h-screen">
+      <div className="py-4 flex items-center">
+        <div className="relative flex items-center">
+          <input
+            type="text"
+            placeholder="Search by description..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="rounded-l border px-2 py-1"
+          />
+          {searchQuery && (
+            <button
+              onClick={handleClearSearch}
+              className="absolute inset-y-0 right-0 flex items-center justify-center bg-red-500 w-8 rounded-r focus:outline-none"
+            >
+              <span className="text-white">x</span>
+            </button>
+          )}
+        </div>
         <button
           onClick={() => fetchElections(0, 10, searchQuery)}
           className="ml-2 bg-blue-500 text-white px-4 py-2 rounded"
@@ -166,67 +170,47 @@ const ElectionsList = () => {
         </button>
       </div>
 
-      <div className="flex justify-between w-full px-10 py-5 bg-blue-500 text-white">
-        <button
-          onClick={handleAdd}
-          className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
+      <ActionBar
+        onAddClick={onAddClick}
+        onEditClick={onEditClick}
+        onDeleteClick={onDeleteClick}
+      />
+
+      <GenericTable
+        data={elections}
+        onRowClick={onRowClick}
+        selectedData={selectedElection}
+        columns={fields}
+        idField="electionId"
+      />
+
+      {isModalOpen && (
+        <GenericModal
+          isOpen={isModalOpen}
+          closeModal={handleModalClose}
+          title={`${modalType.charAt(0).toUpperCase() + modalType.slice(1)} Election`}
+          footer={footerMap[modalType]}
         >
-          Add
-        </button>
-        {selectedElection && (
-          <>
-            <button
-              onClick={() => handleEditClick(selectedElection)}
-              className="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded"
-            >
-              Edit
-            </button>
-            <button
-              onClick={() => handleDeleteClick(selectedElection)}
-              className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
-            >
-              Delete
-            </button>
-          </>
-        )}
-      </div>
-
-      {isAddModalOpen && (
-        <ElectionForm
-          isAddModalOpen={isAddModalOpen}
-          closeModal={closeModal}
-          saveElection={saveElection}
-          // pass other required props
-        />
+          {modalType === "delete" ? (
+            <p>Are you sure you want to delete this election?</p>
+          ) : (
+            <GenericForm
+              initialValues={modalType === "edit" ? selectedElection : {}}
+              onSubmit={handleSave}
+              fields={fields.map((field) => ({
+                ...field,
+                type: field.type || "text",
+              }))}
+              id="generic-form"
+            />
+          )}
+        </GenericModal>
       )}
 
-      {selectedElection && (
-        <EditElectionModal
-          isOpen={isEditModalOpen}
-          closeModal={() => setIsEditModalOpen(false)}
-          election={selectedElection}
-          saveElection={saveElection}
-        />
-      )}
-      <div className="flex-grow flex items-start">
-        <ElectionTable
-          elections={elections}
-          handleRowClick={handleRowClick}
-          selectedElection={selectedElection}
-        />
-      </div>
-
-      {/* Render page navigation */}
       <PageNavigation
         totalPages={totalPages}
         currentPage={currentPage}
-        handlePageNavigation={handlePageNavigation}
-      />
-
-      <DeleteConfirmationModal
-        isOpen={isDeleteModalOpen}
-        closeModal={() => setIsDeleteModalOpen(false)}
-        handleDelete={handleDeleteConfirm}
+        handlePageNavigation={(newPage) => fetchElections(newPage, 10)}
       />
     </div>
   );

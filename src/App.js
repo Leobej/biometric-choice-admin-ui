@@ -14,6 +14,9 @@ import Navigation from "./navigation/Navigation";
 import EmptyRoute from "./routes/EmptyRoute";
 import LoggedIn from "./home/LoggedIn";
 import CandidatesList from "./admin/candidate/CandidatesList";
+import VoterForm from "./admin/voter/VoterForm";
+import VotersList from "./admin/voter/VotersList";
+import DevicesList from "./admin/device/DeviceList";
 function App() {
   return (
     <Router>
@@ -49,7 +52,7 @@ function App() {
               </RoleBasedAccess>
             }
           />
-                 <Route
+          <Route
             path="/candidates"
             element={
               <RoleBasedAccess roles={["ADMIN"]}>
@@ -58,13 +61,30 @@ function App() {
             }
           />
           <Route
+            path="/voters"
+            element={
+              <RoleBasedAccess roles={["ADMIN"]}>
+                <VotersList />
+              </RoleBasedAccess>
+            }
+          />
+          <Route
+            path="/devices"
+            element={
+              <RoleBasedAccess roles={["ADMIN"]}>
+                <DevicesList />
+              </RoleBasedAccess>
+            }
+          />
+
+          {/* <Route
             path="/create-election"
             element={
               <RoleBasedAccess roles={["ADMIN"]}>
                 <CreateElectionForm />
               </RoleBasedAccess>
             }
-          />
+          /> */}
           <Route
             path="/create-candidates"
             element={
