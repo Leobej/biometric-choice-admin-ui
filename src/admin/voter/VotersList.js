@@ -1,16 +1,20 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import VoterForm from "./VoterForm";
+import VoterTable from "./VoterTable";
+import PageNavigation from "./PageNavigation";
+import EditVoterModal from "./EditVoterModal";
+import DeleteConfirmationModal from "./DeleteConfirmationModal";
 import GenericTable from "../genericlistcomponents/GenericTable";
 import GenericModal from "../genericlistcomponents/GenericModal";
 import GenericForm from "../genericlistcomponents/GenericForm";
-import PageNavigation from "./PageNavigation";
 import ActionBar from "../genericlistcomponents/ActionBar";
 
-const CandidatesList = () => {
-  const [candidates, setCandidates] = useState([]);
+const VotersList = () => {
+  const [voters, setVoters] = useState([]);
   const [totalPages, setTotalPages] = useState(0);
   const [currentPage, setCurrentPage] = useState(0);
-  const [selectedCandidate, setSelectedCandidate] = useState(null);
+  const [selectedVoter, setSelectedVoter] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalType, setModalType] = useState(null); // 'add', 'edit', or 'delete'
   const [searchQuery, setSearchQuery] = useState("");
@@ -21,44 +25,43 @@ const CandidatesList = () => {
   };
 
   const onRowClick = (item) => {
-    console.log("Row clicked:", item);
-    setSelectedCandidate(item);
+    setSelectedVoter(item);
   };
 
   const onEditClick = () => {
-    console.log("Edit clicked, selected candidate:", selectedCandidate);
-    if (selectedCandidate) {
+    if (selectedVoter) {
       setModalType("edit");
       setIsModalOpen(true);
     } else {
-      alert("Please select a candidate to edit.");
+      alert("Please select a voter to edit.");
     }
   };
 
   const onDeleteClick = () => {
-    if (selectedCandidate) {
+    if (selectedVoter) {
       setModalType("delete");
       setIsModalOpen(true);
     } else {
-      alert("Please select a candidate to delete.");
+      alert("Please select a voter to delete.");
     }
   };
 
   const fields = [
     { label: "First Name", key: "firstname" },
     { label: "Last Name", key: "lastname" },
-    { label: "Party", key: "party" },
-    { label: "Description", key: "description" },
+    { label: "Voter Id", key: "voterId" },
+    { label: "Created At", key: "createdAt" },
+    { label: "fingerprint", key: "fingerprintId" },
   ];
 
   useEffect(() => {
-    fetchCandidates();
+    fetchVoters();
   }, []);
 
-  const fetchCandidates = async (page = 0, size = 10, searchQuery = "") => {
+  const fetchVoters = async (page = 0, size = 10, searchQuery = "") => {
     const token = localStorage.getItem("token");
     const response = await axios.get(
-      `http://localhost:8080/candidates?page=${page}&size=${size}&query=${searchQuery}`,
+      `http://localhost:8080/voters?page=${page}&size=${size}&query=${searchQuery}`,
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -67,76 +70,64 @@ const CandidatesList = () => {
     );
 
     if (response.data.content.length > 0) {
-      setCandidates(response.data.content);
+      setVoters(response.data.content);
       setTotalPages(response.data.totalPages);
       setCurrentPage(page);
     } else {
-      setCandidates([]);
+      setVoters([]);
     }
   };
 
   const handleModalClose = () => {
     setIsModalOpen(false);
     setModalType(null);
-    setSelectedCandidate(null);
+    setSelectedVoter(null);
   };
 
   const handleSave = async (values) => {
-    // Save candidate logic...
+    // Save voter logic...
     handleModalClose();
-    fetchCandidates();
+    fetchVoters();
   };
 
   const handleDeleteConfirm = async () => {
-    // Delete candidate logic...
+    // Delete voter logic...
     handleModalClose();
-    fetchCandidates();
+    fetchVoters();
   };
 
   const handleClearSearch = () => {
     setSearchQuery(""); // Reset the search query
-    fetchCandidates(); // Fetch the initial list of candidates
+    fetchVoters(); // Fetch the initial list of voters
   };
 
   const footerMap = {
     add: (
       <>
-        <button type="submit" form="generic-form" /* ...other attributes */>
+        <button type="submit" form="generic-form">
           Save
         </button>
-        <button
-          type="button"
-          onClick={handleModalClose} /* ...other attributes */
-        >
+        <button type="button" onClick={handleModalClose}>
           Cancel
         </button>
       </>
     ),
     edit: (
       <>
-        <button type="submit" form="generic-form" /* ...other attributes */>
+        <button type="submit" form="generic-form">
           Save
         </button>
-        <button
-          type="button"
-          onClick={handleModalClose} /* ...other attributes */
-        >
+        <button type="button" onClick={handleModalClose}>
           Cancel
         </button>
       </>
     ),
     delete: (
       <>
-        <button
-          type="button"
-          onClick={handleDeleteConfirm} /* ...other attributes */
-        >
+        <button type="button" onClick={handleDeleteConfirm}>
           Delete
         </button>
-        <button
-          type="button"
-          onClick={handleModalClose} /* ...other attributes */
-        >
+        <button type="button" onClick={handleModalClose}>
           Cancel
         </button>
       </>
@@ -149,12 +140,12 @@ const CandidatesList = () => {
         <div className="relative flex items-center">
           <input
             type="text"
-            placeholder="Search by name, party, or any other field..."
+            placeholder="Search by name..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="rounded-l border px-2 py-1"
           />
-          {searchQuery && ( // Only show the clear button if there's a search query
+          {searchQuery && (
             <button
               onClick={handleClearSearch}
               className="absolute inset-y-0 right-0 flex items-center justify-center bg-red-500 w-8 rounded-r focus:outline-none"
@@ -164,7 +155,7 @@ const CandidatesList = () => {
           )}
         </div>
         <button
-          onClick={() => fetchCandidates(0, 10, searchQuery)}
+          onClick={() => fetchVoters(0, 10, searchQuery)}
           className="ml-2 bg-blue-500 text-white px-4 py-2 rounded"
         >
           Search
@@ -177,11 +168,11 @@ const CandidatesList = () => {
         onDeleteClick={onDeleteClick}
       />
       <GenericTable
-        data={candidates}
+        data={voters}
         onRowClick={onRowClick}
-        selectedData={selectedCandidate}
+        selectedData={selectedVoter}
         columns={fields}
-        idField="candidateId"
+        idField="voterId"
       />
 
       {isModalOpen && (
@@ -190,14 +181,14 @@ const CandidatesList = () => {
           closeModal={handleModalClose}
           title={`${
             modalType.charAt(0).toUpperCase() + modalType.slice(1)
-          } Candidate`}
+          } Voter`}
           footer={footerMap[modalType]}
         >
           {modalType === "delete" ? (
-            <p>Are you sure you want to delete this candidate?</p>
+            <p>Are you sure you want to delete this voter?</p>
           ) : (
             <GenericForm
-              initialValues={modalType === "edit" ? selectedCandidate : {}}
+              initialValues={modalType === "edit" ? selectedVoter : {}}
               onSubmit={handleSave}
               fields={fields.map((field) => ({
                 ...field,
@@ -212,10 +203,10 @@ const CandidatesList = () => {
       <PageNavigation
         totalPages={totalPages}
         currentPage={currentPage}
-        handlePageNavigation={(newPage) => fetchCandidates(newPage, 10)}
+        handlePageNavigation={(newPage) => fetchVoters(newPage, 10)}
       />
     </div>
   );
 };
 
-export default CandidatesList;
+export default VotersList;
