@@ -115,112 +115,119 @@ function FingerprintRegistration() {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center h-screen">
-      <h1 className="text-3xl font-bold mb-6">Fingerprint Registration</h1>
-      <form
-        className="bg-white rounded-lg p-6 shadow-md"
-        onSubmit={handleSubmit}
-      >
-        <div className="mb-4">
-          <label
-            className="block text-gray-700 font-bold mb-2"
-            htmlFor="first_name"
-          >
-            First Name
-          </label>
-          <input
-            className="appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-            id="first_name"
-            type="text"
-            placeholder="John"
-            value={firstname}
-            onChange={(e) => setFirstName(e.target.value)}
-          />
-        </div>
-        <div className="mb-4">
-          <label
-            className="block text-gray-700 font-bold mb-2"
-            htmlFor="last_name"
-          >
-            Last Name
-          </label>
-          <input
-            className="appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-            id="last_name"
-            type="text"
-            placeholder="Doe"
-            value={lastname}
-            onChange={(e) => setLastName(e.target.value)}
-          />
-        </div>
-        <div className="mb-4">
-          <label className="block text-gray-700 font-bold mb-2" htmlFor="cnp">
-            CNP
-          </label>
-          <input
-            className="appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-            id="cnp"
-            type="text"
-            placeholder="1234567890123"
-            value={cnp}
-            onChange={(e) => {setCnp(e.target.value); setPassword(e.target.value)}}
-          />
-        </div>
-        <div className="mb-4">
-          <label
-            className="block text-gray-700 font-bold mb-2"
-            htmlFor="fingerprint"
-          >
-            Fingerprint
-          </label>
-          <button
-            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-            onClick={sendNextFingerprint}
-          >
-            Scan Fingerprint
-          </button>
-          <button
-            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-            onClick={handleGetFingerprintClick}
-          >
-            Get Latest Fingerprint ID
-          </button>
-        </div>
+    <div className="flex flex-col items-center justify-center h-screen bg-gray-50">
+      <div className="w-full max-w-lg p-4 bg-white rounded-lg shadow-md">
+        <form onSubmit={handleSubmit}>
+          <h1 className="text-3xl font-bold mb-6 text-gray-800 text-center">
+            Fingerprint Registration
+          </h1>
 
-        <div className="flex items-center justify-between">
-          <button
-            className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-            onClick={handleLogout}
-          >
-            Logout
-          </button>
+          {/* Input Fields */}
+          <div className="space-y-4">
+            { /* First Name */ }
+            <div className="flex flex-col">
+              <label className="text-gray-700 font-bold mb-2" htmlFor="first_name">
+                First Name
+              </label>
+              <input
+                className="border border-gray-300 rounded py-2 px-3 text-gray-700 focus:ring-2 focus:ring-blue-500"
+                id="first_name"
+                type="text"
+                placeholder="John"
+                value={firstname}
+                onChange={(e) => setFirstName(e.target.value)}
+              />
+            </div>
 
-          <div>
-            <div>Fingerprint ID: {fingerprintId}</div>
+            { /* Last Name */ }
+            <div className="flex flex-col">
+              <label className="text-gray-700 font-bold mb-2" htmlFor="last_name">
+                Last Name
+              </label>
+              <input
+                className="border border-gray-300 rounded py-2 px-3 text-gray-700 focus:ring-2 focus:ring-blue-500"
+                id="last_name"
+                type="text"
+                placeholder="Doe"
+                value={lastname}
+                onChange={(e) => setLastName(e.target.value)}
+              />
+            </div>
 
-            {registerStatus === "success" && (
-              <div style={{ color: "green" }}>
-                User registered successfully!
-              </div>
-            )}
-            {registerStatus === "error" && (
-              <div style={{ color: "red" }}>
-                An error occurred while registering user.
-              </div>
-            )}
+            { /* CNP */ }
+            <div className="flex flex-col">
+              <label className="text-gray-700 font-bold mb-2" htmlFor="cnp">
+                CNP
+              </label>
+              <input
+                className="border border-gray-300 rounded py-2 px-3 text-gray-700 focus:ring-2 focus:ring-blue-500"
+                id="cnp"
+                type="text"
+                placeholder="1234567890123"
+                value={cnp}
+                onChange={(e) => { setCnp(e.target.value); setPassword(e.target.value); }}
+              />
+            </div>
           </div>
 
-          <button className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
-            Cancel
-          </button>
-          <button
-            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-            type="submit"
-          >
-            Register
-          </button>
-        </div>
-      </form>
+          {/* Fingerprint Section */}
+          <div className="mt-6 mb-4">
+            <label className="block text-gray-700 font-bold mb-2" htmlFor="fingerprint">
+              Fingerprint
+            </label>
+            <div className="flex space-x-4">
+              <button
+                className="flex-1 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                onClick={sendNextFingerprint}
+              >
+                Scan Fingerprint
+              </button>
+              <button
+                className="flex-1 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                onClick={handleGetFingerprintClick}
+              >
+                Get Latest Fingerprint ID
+              </button>
+            </div>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex items-center justify-between mt-6">
+            <button
+              className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+              onClick={handleLogout}
+            >
+              Logout
+            </button>
+            <div className="text-center">
+              <div>Fingerprint ID: {fingerprintId}</div>
+              {registerStatus === "success" && (
+                <div className="text-green-500">
+                  User registered successfully!
+                </div>
+              )}
+              {registerStatus === "error" && (
+                <div className="text-red-500">
+                  An error occurred while registering user.
+                </div>
+              )}
+            </div>
+            <div className="flex space-x-4">
+              <button
+                className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+              >
+                Cancel
+              </button>
+              <button
+                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                type="submit"
+              >
+                Register
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
     </div>
   );
 }
