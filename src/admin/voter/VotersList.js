@@ -1,15 +1,11 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import VoterForm from "./VoterForm";
-import VoterTable from "./VoterTable";
 import PageNavigation from "./PageNavigation";
 import EditVoterModal from "./EditVoterModal";
-import DeleteConfirmationModal from "./DeleteConfirmationModal";
 import GenericTable from "../genericlistcomponents/GenericTable";
 import GenericModal from "../genericlistcomponents/GenericModal";
-import GenericForm from "../genericlistcomponents/GenericForm";
 import ActionBar from "../genericlistcomponents/ActionBar";
-
+import AddVoterModal from "./AddVoterModal";
 const VotersList = () => {
   const [voters, setVoters] = useState([]);
   const [totalPages, setTotalPages] = useState(0);
@@ -175,29 +171,29 @@ const VotersList = () => {
         idField="voterId"
       />
 
-      {isModalOpen && (
-        <GenericModal
-          isOpen={isModalOpen}
-          closeModal={handleModalClose}
-          title={`${
-            modalType.charAt(0).toUpperCase() + modalType.slice(1)
-          } Voter`}
-          footer={footerMap[modalType]}
-        >
-          {modalType === "delete" ? (
-            <p>Are you sure you want to delete this voter?</p>
-          ) : (
-            <GenericForm
-              initialValues={modalType === "edit" ? selectedVoter : {}}
-              onSubmit={handleSave}
-              fields={fields.map((field) => ({
-                ...field,
-                type: field.type || "text",
-              }))}
-              id="generic-form"
-            />
-          )}
-        </GenericModal>
+{isModalOpen && (
+        modalType === 'edit' ? (
+          <EditVoterModal
+            isOpen={isModalOpen}
+            closeModal={handleModalClose}
+            voter={selectedVoter}
+            saveVoter={handleSave}
+          />
+        ) : modalType === 'add' ? (   // Check if modalType is 'add'
+          <AddVoterModal   // Render the AddVoterModal when modalType is 'add'
+            isOpen={isModalOpen}
+            closeModal={handleModalClose}
+          />
+        ) : (
+          <GenericModal
+            isOpen={isModalOpen}
+            closeModal={handleModalClose}
+            title={`${modalType.charAt(0).toUpperCase() + modalType.slice(1)} Voter`}
+            footer={footerMap[modalType]}
+          >
+            {/* ... rest of your code ... */}
+          </GenericModal>
+        )
       )}
 
       <PageNavigation

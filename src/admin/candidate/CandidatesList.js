@@ -5,6 +5,8 @@ import GenericModal from "../genericlistcomponents/GenericModal";
 import GenericForm from "../genericlistcomponents/GenericForm";
 import PageNavigation from "./PageNavigation";
 import ActionBar from "../genericlistcomponents/ActionBar";
+import EditCandidateModal from "./EditCandidateModal";
+import AddCandidateModal from "./AddCandidateModal";
 
 const CandidatesList = () => {
   const [candidates, setCandidates] = useState([]);
@@ -184,32 +186,44 @@ const CandidatesList = () => {
         idField="candidateId"
       />
 
-      {isModalOpen && (
-        <GenericModal
-          isOpen={isModalOpen}
-          closeModal={handleModalClose}
-          title={`${
-            modalType.charAt(0).toUpperCase() + modalType.slice(1)
-          } Candidate`}
-          footer={footerMap[modalType]}
-        >
-          {modalType === "delete" ? (
-            <p>Are you sure you want to delete this candidate?</p>
-          ) : (
-            <GenericForm
-              initialValues={modalType === "edit" ? selectedCandidate : {}}
-              onSubmit={handleSave}
-              fields={fields.map((field) => ({
-                ...field,
-                type: field.type || "text",
-              }))}
-              id="generic-form"
-            />
-          )}
-        </GenericModal>
+{isModalOpen && (
+        modalType === 'edit' ? (
+          <EditCandidateModal
+            isOpen={isModalOpen}
+            closeModal={handleModalClose}
+            candidate={selectedCandidate}
+            saveCandidate={handleSave}
+          />
+        ) : modalType === 'add' ? (
+          <AddCandidateModal
+            isOpen={isModalOpen}
+            closeModal={handleModalClose}
+            saveCandidate={handleSave}
+          />
+        ) : (
+          <GenericModal
+            isOpen={isModalOpen}
+            closeModal={handleModalClose}
+            title={`${modalType.charAt(0).toUpperCase() + modalType.slice(1)} Candidate`}
+            footer={footerMap[modalType]}
+          >
+            {modalType === "delete" ? (
+              <p>Are you sure you want to delete this candidate?</p>
+            ) : (
+              <GenericForm
+                initialValues={modalType === "edit" ? selectedCandidate : {}}
+                onSubmit={handleSave}
+                fields={fields.map((field) => ({
+                  ...field,
+                  type: field.type || "text",
+                }))}
+                id="generic-form"
+              />
+            )}
+          </GenericModal>
+        )
       )}
-
-      <PageNavigation
+         <PageNavigation
         totalPages={totalPages}
         currentPage={currentPage}
         handlePageNavigation={(newPage) => fetchCandidates(newPage, 10)}

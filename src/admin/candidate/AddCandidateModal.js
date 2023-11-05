@@ -1,38 +1,61 @@
 import React, { useState, useEffect } from "react";
+import axios from "axios";
+import { useNavigate } from "react-router";
 
-const EditVoterModal = ({ isOpen, closeModal, voter, saveVoter }) => {
-  // Local state to track the form field values
-  const [firstname, setFirstName] = useState(voter ? voter.firstname : '');
-  const [lastname, setLastName] = useState(voter ? voter.lastname : '');
-  const [cnp, setCnp] = useState(voter ? voter.cnp : '');  // new
-  const [password, setPassword] = useState('');  // new
-  const [fingerprintId, setFingerprintId] = useState(voter ? voter.fingerprintId : null);  // new
-  const [createdAt, setCreatedAt] = useState(voter ? voter.createdAt : '');  // new
+const AddCandidateModal = ({ isOpen, closeModal }) => {
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [party, setParty] = useState("");
+  const [position, setPosition] = useState("");
+  const [image, setImage] = useState("");
+
+  const navigate = useNavigate();
 
   useEffect(() => {
-    if (voter) {
-      setFirstName(voter.firstname);
-      setLastName(voter.lastname);
-      setCnp(voter.cnp);  // new
-      setFingerprintId(voter.fingerprintId);  // new
-      setCreatedAt(voter.createdAt);  // new
+    const token = localStorage.getItem("token");
+    if (!token) {
+      navigate("/login");
     }
-  }, [voter]);
+  }, [navigate]);
 
-  const handleSubmit = (event) => {
+  const resetForm = () => {
+    setFirstName("");
+    setLastName("");
+    setParty("");
+    setPosition("");
+    setImage("");
+  };
+
+  
+
+  const handleSubmit = async (event) => {
     event.preventDefault();
 
-    saveVoter({
-      ...voter,
-      firstname,
-      lastname,
-      cnp,  // new
-      password,  // new
-      fingerprintId,  // new
-      createdAt  // new
-    });
+    const formData = new FormData();
+    formData.append("firstName", firstName);
+    formData.append("lastName", lastName);
+    formData.append("party", party);
+    formData.append("position", position);
+    formData.append("image", image);
 
-    closeModal();
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.post("http://localhost:8080/candidates", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (response.status === 200) {
+        alert("Candidate created successfully!");
+        resetForm();
+        closeModal();
+      }
+    } catch (error) {
+      console.error("Error creating candidate:", error);
+      alert("Error creating candidate. Please try again.");
+    }
   };
 
   if (!isOpen) {
@@ -45,6 +68,7 @@ const EditVoterModal = ({ isOpen, closeModal, voter, saveVoter }) => {
         <div className="fixed inset-0 transition-opacity">
           <div className="absolute inset-0 bg-gray-500 opacity-75"></div>
         </div>
+
         <div
           className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full"
           role="dialog"
@@ -53,6 +77,8 @@ const EditVoterModal = ({ isOpen, closeModal, voter, saveVoter }) => {
         >
           <form onSubmit={handleSubmit}>
             <div className="px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+              {/* Form fields */}
+              {/* ... rest of your form fields go here ... */}
               <div>
                 <label className="block">
                   <span className="text-gray-700">First Name</span>
@@ -60,7 +86,7 @@ const EditVoterModal = ({ isOpen, closeModal, voter, saveVoter }) => {
                     type="text"
                     className="form-input mt-1 block w-full"
                     placeholder="First Name"
-                    value={firstname}
+                    value={firstName}
                     onChange={(e) => setFirstName(e.target.value)}
                   />
                 </label>
@@ -72,56 +98,42 @@ const EditVoterModal = ({ isOpen, closeModal, voter, saveVoter }) => {
                     type="text"
                     className="form-input mt-1 block w-full"
                     placeholder="Last Name"
-                    value={lastname}
+                    value={lastName}
                     onChange={(e) => setLastName(e.target.value)}
                   />
                 </label>
               </div>
               <div className="mt-4">
                 <label className="block">
-                  <span className="text-gray-700">CNP</span>
+                  <span className="text-gray-700">Party</span>
                   <input
                     type="text"
                     className="form-input mt-1 block w-full"
-                    placeholder="CNP"
-                    value={cnp}
-                    onChange={(e) => setCnp(e.target.value)}
+                    placeholder="Party"
+                    value={party}
+                    onChange={(e) => setParty(e.target.value)}
                   />
                 </label>
               </div>
               <div className="mt-4">
                 <label className="block">
-                  <span className="text-gray-700">Password</span>
+                  <span className="text-gray-700">Position</span>
                   <input
-                    type="password"
+                    type="text"
                     className="form-input mt-1 block w-full"
-                    placeholder="Password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Position"
+                    value={position}
+                    onChange={(e) => setPosition(e.target.value)}
                   />
                 </label>
               </div>
               <div className="mt-4">
                 <label className="block">
-                  <span className="text-gray-700">Fingerprint ID</span>
+                  <span className="text-gray-700">Candidate Image</span>
                   <input
-                    type="text"
+                    type="file"
                     className="form-input mt-1 block w-full"
-                    placeholder="Fingerprint ID"
-                    value={fingerprintId || ''}
-                    onChange={(e) => setFingerprintId(e.target.value)}
-                  />
-                </label>
-              </div>
-              <div className="mt-4">
-                <label className="block">
-                  <span className="text-gray-700">Created At</span>
-                  <input
-                    type="text"
-                    className="form-input mt-1 block w-full"
-                    placeholder="Created At"
-                    value={createdAt}
-                    onChange={(e) => setCreatedAt(e.target.value)}
+                    onChange={(event) => setImage(event.target.files[0])}
                   />
                 </label>
               </div>
@@ -132,7 +144,7 @@ const EditVoterModal = ({ isOpen, closeModal, voter, saveVoter }) => {
                   type="submit"
                   className="inline-flex justify-center w-full rounded-md border border-transparent px-4 py-2 bg-green-600 text-base leading-6 font-medium text-white shadow-sm hover:bg-green-500 focus:outline-none focus:border-green-700 focus:shadow-outline-green transition ease-in-out duration-150 sm:text-sm"
                 >
-                  Save
+                  Create
                 </button>
               </span>
               <span className="mt-3 flex w-full rounded-md shadow-sm sm:mt-0 sm:w-auto">
@@ -142,7 +154,7 @@ const EditVoterModal = ({ isOpen, closeModal, voter, saveVoter }) => {
                   className="inline-flex justify-center w-full rounded-md border border-gray-300 px-4 py-2 bg-white text-base leading-6 font-medium text-gray-700 shadow-sm hover:text-gray-500 focus:outline-none focus:border-blue-300 focus:shadow-outline-blue transition ease-in-out duration-150 sm:text-sm"
                 >
                   Cancel
-                </button>
+                  </button>
               </span>
             </div>
           </form>
@@ -152,4 +164,4 @@ const EditVoterModal = ({ isOpen, closeModal, voter, saveVoter }) => {
   );
 };
 
-export default EditVoterModal;
+export default AddCandidateModal;

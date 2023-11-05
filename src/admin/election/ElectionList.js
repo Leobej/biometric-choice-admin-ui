@@ -5,6 +5,8 @@ import GenericModal from "../genericlistcomponents/GenericModal";
 import GenericForm from "../genericlistcomponents/GenericForm";
 import PageNavigation from "./PageNavigation";
 import ActionBar from "../genericlistcomponents/ActionBar";
+import EditElectionModal from "./EditElectionModal";
+import AddElectionModal from "./AddElectionModal";  // Import CreateElectionModal component
 
 const ElectionsList = () => {
   const [elections, setElections] = useState([]);
@@ -12,7 +14,7 @@ const ElectionsList = () => {
   const [currentPage, setCurrentPage] = useState(0);
   const [selectedElection, setSelectedElection] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [modalType, setModalType] = useState(null); // 'add', 'edit', or 'delete'
+  const [modalType, setModalType] = useState(null);  // 'add', 'edit', or 'delete'
   const [searchQuery, setSearchQuery] = useState("");
 
   const onAddClick = () => {
@@ -51,8 +53,7 @@ const ElectionsList = () => {
     { label: "Description", key: "description" },
     { label: "Created at", key: "createdAt" },
     { label: "Location", key: "location" },
-];
-
+  ];
 
   useEffect(() => {
     fetchElections();
@@ -85,44 +86,16 @@ const ElectionsList = () => {
   };
 
   const handleSave = async (values) => {
-    // Save election logic...
     handleModalClose();
     fetchElections();
   };
 
   const handleDeleteConfirm = async () => {
-    // Delete election logic...
     handleModalClose();
     fetchElections();
   };
 
   const footerMap = {
-    add: (
-      <>
-        <button type="submit" form="generic-form" /* ...other attributes */>
-          Save
-        </button>
-        <button
-          type="button"
-          onClick={handleModalClose} /* ...other attributes */
-        >
-          Cancel
-        </button>
-      </>
-    ),
-    edit: (
-      <>
-        <button type="submit" form="generic-form" /* ...other attributes */>
-          Save
-        </button>
-        <button
-          type="button"
-          onClick={handleModalClose} /* ...other attributes */
-        >
-          Cancel
-        </button>
-      </>
-    ),
     delete: (
       <>
         <button
@@ -140,7 +113,6 @@ const ElectionsList = () => {
       </>
     ),
   };
-
 
   return (
     <div className="flex flex-col justify-start items-center min-h-screen">
@@ -184,7 +156,21 @@ const ElectionsList = () => {
         idField="electionId"
       />
 
-      {isModalOpen && (
+      {isModalOpen && modalType === "add" && (
+        <AddElectionModal
+          isOpen={isModalOpen}
+          closeModal={handleModalClose}
+        />
+      )}
+      {isModalOpen && modalType === "edit" && (
+        <EditElectionModal
+          isOpen={isModalOpen}
+          closeModal={handleModalClose}
+          election={selectedElection}
+          saveElection={handleSave}
+        />
+      )}
+      {isModalOpen && modalType !== "add" && modalType !== "edit" && (
         <GenericModal
           isOpen={isModalOpen}
           closeModal={handleModalClose}
@@ -197,10 +183,7 @@ const ElectionsList = () => {
             <GenericForm
               initialValues={modalType === "edit" ? selectedElection : {}}
               onSubmit={handleSave}
-              fields={fields.map((field) => ({
-                ...field,
-                type: field.type || "text",
-              }))}
+              fields={fields.map((field) => ({ ...field, type: field.type || "text" }))}
               id="generic-form"
             />
           )}

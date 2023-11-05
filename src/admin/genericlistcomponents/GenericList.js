@@ -52,4 +52,4 @@ const GenericList = ({
   );
 };
 
-export default GenericList;
+// export default GenericList;
