@@ -55,6 +55,13 @@ const Navigation = () => {
                   >
                     Devices
                   </NavLink>
+                  <NavLink
+                    to="/locations"
+                    activeClassName="text-yellow-500 border-b-2 border-yellow-500"
+                    className="text-white text-lg px-4 py-2 hover:text-gray-300"
+                  >
+                    Locations
+                  </NavLink>
 
 
                 </>

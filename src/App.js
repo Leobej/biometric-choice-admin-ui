@@ -14,9 +14,9 @@ import Navigation from "./navigation/Navigation";
 import EmptyRoute from "./routes/EmptyRoute";
 import LoggedIn from "./home/LoggedIn";
 import CandidatesList from "./admin/candidate/CandidatesList";
-import VoterForm from "./admin/voter/VoterForm";
 import VotersList from "./admin/voter/VotersList";
 import DevicesList from "./admin/device/DeviceList";
+import LocationsList from "./admin/locations/LocationsList";
 function App() {
   return (
     <Router>
@@ -76,7 +76,14 @@ function App() {
               </RoleBasedAccess>
             }
           />
-
+          <Route
+            path="/locations"
+            element={
+              <RoleBasedAccess roles={["ADMIN"]}>
+                <LocationsList />
+              </RoleBasedAccess>
+            }
+          />
           {/* <Route
             path="/create-election"
             element={
@@ -101,7 +108,6 @@ function App() {
               </RoleBasedAccess>
             }
           />
-
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </UserRoleProvider>

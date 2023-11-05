@@ -5,14 +5,14 @@ import GenericModal from "../genericlistcomponents/GenericModal";
 import GenericForm from "../genericlistcomponents/GenericForm";
 import PageNavigation from "./PageNavigation";
 import ActionBar from "../genericlistcomponents/ActionBar";
-import EditDeviceModal from "./EditDeviceModal";
-import AddDeviceModal from "./AddDeviceModal";
+import EditLocationModal from "./EditLocationModal";
+import AddLocationModal from "./AddLocationModal";
 
-const DevicesList = () => {
-  const [devices, setDevices] = useState([]);
+const LocationsList = () => {
+  const [locations, setLocations] = useState([]);
   const [totalPages, setTotalPages] = useState(0);
   const [currentPage, setCurrentPage] = useState(0);
-  const [selectedDevice, setSelectedDevice] = useState(null);
+  const [selectedLocation, setSelectedLocation] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalType, setModalType] = useState(null); // 'add', 'edit', or 'delete'
   const [searchQuery, setSearchQuery] = useState("");
@@ -23,44 +23,46 @@ const DevicesList = () => {
   };
 
   const onRowClick = (item) => {
-    console.log("Row clicked:", item);
-    setSelectedDevice(item);
+    setSelectedLocation(item);
   };
 
   const onEditClick = () => {
-    console.log("Edit clicked, selected device:", selectedDevice);
-    if (selectedDevice) {
+    if (selectedLocation) {
       setModalType("edit");
       setIsModalOpen(true);
     } else {
-      alert("Please select a device to edit.");
+      alert("Please select a location to edit.");
     }
   };
 
   const onDeleteClick = () => {
-    if (selectedDevice) {
+    if (selectedLocation) {
       setModalType("delete");
       setIsModalOpen(true);
     } else {
-      alert("Please select a device to delete.");
+      alert("Please select a location to delete.");
     }
   };
 
+  const handleClearSearch = () => {
+    setSearchQuery("");
+    fetchLocations();
+  };
+
   const fields = [
-    { label: "Device Name", key: "name" },
-    { label: "Device Type", key: "type" },
-    { label: "Device Status", key: "status" },
-    // ...other fields
+    { label: "Name", key: "name" },
+    { label: "Address", key: "address" },
+    { label: "City", key: "city" },
   ];
 
   useEffect(() => {
-    fetchDevices();
+    fetchLocations();
   }, []);
 
-  const fetchDevices = async (page = 0, size = 10, searchQuery = "") => {
+  const fetchLocations = async (page = 0, size = 10, searchQuery = "") => {
     const token = localStorage.getItem("token");
     const response = await axios.get(
-      `http://localhost:8080/devices?page=${page}&size=${size}&query=${searchQuery}`,
+      `http://localhost:8080/locations?page=${page}&size=${size}&name=${searchQuery}`,
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -69,64 +71,43 @@ const DevicesList = () => {
     );
 
     if (response.data.content.length > 0) {
-      setDevices(response.data.content);
+      setLocations(response.data.content);
       setTotalPages(response.data.totalPages);
       setCurrentPage(page);
     } else {
-      setDevices([]);
+      setLocations([]);
     }
   };
 
   const handleModalClose = () => {
     setIsModalOpen(false);
     setModalType(null);
-    setSelectedDevice(null);
+    setSelectedLocation(null);
   };
 
   const handleSave = async (values) => {
-    // Save device logic...
     handleModalClose();
-    fetchDevices();
+    fetchLocations();
   };
 
   const handleDeleteConfirm = async () => {
-    // Delete device logic...
     handleModalClose();
-    fetchDevices();
-  };
-
-  const handleClearSearch = () => {
-    setSearchQuery(""); // Reset the search query
-    fetchDevices(); // Fetch the initial list of devices
+    fetchLocations();
   };
 
   const footerMap = {
-    add: (
-      <>
-        <button type="submit" form="generic-form">
-          Save
-        </button>
-        <button type="button" onClick={handleModalClose}>
-          Cancel
-        </button>
-      </>
-    ),
-    edit: (
-      <>
-        <button type="submit" form="generic-form">
-          Save
-        </button>
-        <button type="button" onClick={handleModalClose}>
-          Cancel
-        </button>
-      </>
-    ),
     delete: (
       <>
-        <button type="button" onClick={handleDeleteConfirm}>
+        <button
+          type="button"
+          onClick={handleDeleteConfirm}
+        >
           Delete
         </button>
-        <button type="button" onClick={handleModalClose}>
+        <button
+          type="button"
+          onClick={handleModalClose}
+        >
           Cancel
         </button>
       </>
@@ -139,7 +120,7 @@ const DevicesList = () => {
         <div className="relative flex items-center">
           <input
             type="text"
-            placeholder="Search by name, type, or any other field..."
+            placeholder="Search by name..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="rounded-l border px-2 py-1"
@@ -154,7 +135,7 @@ const DevicesList = () => {
           )}
         </div>
         <button
-          onClick={() => fetchDevices(0, 10, searchQuery)}
+          onClick={() => fetchLocations(0, 10, searchQuery)}
           className="ml-2 bg-blue-500 text-white px-4 py-2 rounded"
         >
           Search
@@ -166,49 +147,56 @@ const DevicesList = () => {
         onEditClick={onEditClick}
         onDeleteClick={onDeleteClick}
       />
+
       <GenericTable
-        data={devices}
+        data={locations}
         onRowClick={onRowClick}
-        selectedData={selectedDevice}
+        selectedData={selectedLocation}
         columns={fields}
-        idField="deviceId"
+        idField="locationId"
       />
 
-      {modalType === 'add' && (
-        <AddDeviceModal
+      {isModalOpen && modalType === "add" && (
+        <AddLocationModal
           isOpen={isModalOpen}
           closeModal={handleModalClose}
-          saveDevice={handleSave}
         />
       )}
-
-      {modalType === 'edit' && (
-        <EditDeviceModal
+      {isModalOpen && modalType === "edit" && (
+        <EditLocationModal
           isOpen={isModalOpen}
           closeModal={handleModalClose}
-          device={selectedDevice}
-          saveDevice={handleSave}
+          location={selectedLocation}
+          saveLocation={handleSave}
         />
       )}
-
-      {modalType === 'delete' && (
+      {isModalOpen && modalType !== "add" && modalType !== "edit" && (
         <GenericModal
           isOpen={isModalOpen}
           closeModal={handleModalClose}
-          title={`Delete Device`}
+          title={`${modalType.charAt(0).toUpperCase() + modalType.slice(1)} Location`}
           footer={footerMap[modalType]}
         >
-          <p>Are you sure you want to delete this device?</p>
+          {modalType === "delete" ? (
+            <p>Are you sure you want to delete this location?</p>
+          ) : (
+            <GenericForm
+              initialValues={modalType === "edit" ? selectedLocation : {}}
+              onSubmit={handleSave}
+              fields={fields.map((field) => ({ ...field, type: field.type || "text" }))}
+              id="generic-form"
+            />
+          )}
         </GenericModal>
       )}
 
       <PageNavigation
         totalPages={totalPages}
         currentPage={currentPage}
-        handlePageNavigation={(newPage) => fetchDevices(newPage, 10)}
+        handlePageNavigation={(newPage) => fetchLocations(newPage, 10)}
       />
     </div>
   );
 };
 
-export default DevicesList;
+export default LocationsList;
