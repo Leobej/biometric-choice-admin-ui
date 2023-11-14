@@ -10,9 +10,7 @@ const AddVoterModal = ({ isOpen, closeModal }) => {
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    // Handle form submission, e.g., send data to server
-    // ...
-    // On success, close the modal:
+
     closeModal();
   };
 

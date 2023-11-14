@@ -3,7 +3,7 @@ import axios from "axios";
 import GenericTable from "../genericlistcomponents/GenericTable";
 import GenericModal from "../genericlistcomponents/GenericModal";
 import GenericForm from "../genericlistcomponents/GenericForm";
-import PageNavigation from "./PageNavigation";
+import PageNavigation from "../genericlistcomponents/PageNavigation";
 import ActionBar from "../genericlistcomponents/ActionBar";
 import EditCandidateModal from "./EditCandidateModal";
 import AddCandidateModal from "./AddCandidateModal";
@@ -186,15 +186,15 @@ const CandidatesList = () => {
         idField="candidateId"
       />
 
-{isModalOpen && (
-        modalType === 'edit' ? (
+      {isModalOpen &&
+        (modalType === "edit" ? (
           <EditCandidateModal
             isOpen={isModalOpen}
             closeModal={handleModalClose}
             candidate={selectedCandidate}
             saveCandidate={handleSave}
           />
-        ) : modalType === 'add' ? (
+        ) : modalType === "add" ? (
           <AddCandidateModal
             isOpen={isModalOpen}
             closeModal={handleModalClose}
@@ -204,7 +204,9 @@ const CandidatesList = () => {
           <GenericModal
             isOpen={isModalOpen}
             closeModal={handleModalClose}
-            title={`${modalType.charAt(0).toUpperCase() + modalType.slice(1)} Candidate`}
+            title={`${
+              modalType.charAt(0).toUpperCase() + modalType.slice(1)
+            } Candidate`}
             footer={footerMap[modalType]}
           >
             {modalType === "delete" ? (
@@ -221,9 +223,8 @@ const CandidatesList = () => {
               />
             )}
           </GenericModal>
-        )
-      )}
-         <PageNavigation
+        ))}
+      <PageNavigation
         totalPages={totalPages}
         currentPage={currentPage}
         handlePageNavigation={(newPage) => fetchCandidates(newPage, 10)}

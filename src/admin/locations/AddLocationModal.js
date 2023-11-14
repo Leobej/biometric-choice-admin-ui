@@ -9,14 +9,12 @@ const AddLocationModal = ({ isOpen, closeModal, saveLocation }) => {
   const handleSubmit = (event) => {
     event.preventDefault();
 
-    // Save the new location details
     saveLocation({
       name,
       address,
       city,
     });
 
-    // Close the modal
     closeModal();
   };
 

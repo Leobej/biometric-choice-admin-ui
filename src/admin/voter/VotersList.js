@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import PageNavigation from "./PageNavigation";
+import PageNavigation from "../genericlistcomponents/PageNavigation";
 import EditVoterModal from "./EditVoterModal";
 import GenericTable from "../genericlistcomponents/GenericTable";
 import GenericModal from "../genericlistcomponents/GenericModal";

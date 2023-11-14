@@ -84,14 +84,6 @@ function App() {
               </RoleBasedAccess>
             }
           />
-          {/* <Route
-            path="/create-election"
-            element={
-              <RoleBasedAccess roles={["ADMIN"]}>
-                <CreateElectionForm />
-              </RoleBasedAccess>
-            }
-          /> */}
           <Route
             path="/create-candidates"
             element={

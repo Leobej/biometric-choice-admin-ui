@@ -3,7 +3,8 @@ import axios from "axios";
 import GenericTable from "../genericlistcomponents/GenericTable";
 import GenericModal from "../genericlistcomponents/GenericModal";
 import GenericForm from "../genericlistcomponents/GenericForm";
-import PageNavigation from "./PageNavigation";
+import PageNavigation from "../genericlistcomponents/PageNavigation";
+
 import ActionBar from "../genericlistcomponents/ActionBar";
 import EditElectionModal from "./EditElectionModal";
 import AddElectionModal from "./AddElectionModal";  // Import CreateElectionModal component
