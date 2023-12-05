@@ -7,7 +7,7 @@ import axios from "axios";
 import { useUserRole } from "./../../context/UserRoleContext";
 import { useEffect } from "react";
 const FormLogin = () => {
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const { setUserRole } = useUserRole(); 
@@ -22,9 +22,9 @@ const FormLogin = () => {
     }
   }, [navigate]);
 
-  const fetchUserRole = async (username, setUserRole) => {
+  const fetchUserRole = async (email, setUserRole) => {
     try {
-      const response = await axios.get(`http://localhost:8080/user/user-role/${username}`, {
+      const response = await axios.get(`http://localhost:8080/user/user-role/${email}`, {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
       });
       console.log(response.data);
@@ -46,7 +46,7 @@ const handleSubmit = async (event) => {
     const response = await axios.post(
       "http://localhost:8080/authenticate",
       {
-        username,
+        email: email,
         password,
       },
       {
@@ -58,7 +58,7 @@ const handleSubmit = async (event) => {
     localStorage.setItem("token", token);
     console.log(response);
  
-    await fetchUserRole(username, setUserRole);
+    await fetchUserRole(email, setUserRole);
  
     const userRole = localStorage.getItem("userRole");
     console.log(userRole);
@@ -67,7 +67,7 @@ const handleSubmit = async (event) => {
     } else if (userRole === 'USER') {
       navigate("/registration");
     } else {
-      setError("Invalid username or password");
+      setError("Invalid email or password");
     }
   } catch (error) {
     console.log(error);
@@ -93,7 +93,7 @@ const handleSubmit = async (event) => {
             type="text"
             autoComplete="text"
             required
-            onChange={(e) => setUsername(e.target.value)}
+            onChange={(e) => setEmail(e.target.value)}
             className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
           />
         </div>
@@ -117,7 +117,7 @@ const handleSubmit = async (event) => {
           />
         </div>
       </div>
-      {error && <Error message="Invalid username or password" />}
+      {error && <Error message="Invalid email or password" />}
       <ButtonsForm />
     </form>
   );

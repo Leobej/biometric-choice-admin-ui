@@ -47,10 +47,10 @@ const DevicesList = () => {
   };
 
   const fields = [
-    { label: "Device Name", key: "name" },
+    { label: "Device id", key: "id" },
+    { label: "Device name", key: "name" },
     { label: "Device Type", key: "type" },
     { label: "Device Status", key: "status" },
-    // ...other fields
   ];
 
   useEffect(() => {
@@ -174,7 +174,7 @@ const DevicesList = () => {
         idField="deviceId"
       />
 
-      {modalType === 'add' && (
+      {modalType === "add" && (
         <AddDeviceModal
           isOpen={isModalOpen}
           closeModal={handleModalClose}
@@ -182,7 +182,7 @@ const DevicesList = () => {
         />
       )}
 
-      {modalType === 'edit' && (
+      {modalType === "edit" && (
         <EditDeviceModal
           isOpen={isModalOpen}
           closeModal={handleModalClose}
@@ -191,7 +191,7 @@ const DevicesList = () => {
         />
       )}
 
-      {modalType === 'delete' && (
+      {modalType === "delete" && (
         <GenericModal
           isOpen={isModalOpen}
           closeModal={handleModalClose}
