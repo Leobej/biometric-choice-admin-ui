@@ -2,8 +2,7 @@ import React from "react";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import Login from "./login/Login";
 import FingerprintRegistration from "./fingerprintregistration/FingerprintRegistration";
-import AdminDashboard from "./admin/AdminDashboard";
-import CreateElectionForm from "./admin/election/AddElectionModal";
+import AdminDashboard from "./admin/ActiveElectionsDashboard";
 import CreateCandidateForm from "./admin/candidate/AddCandidateModal";
 import Home from "./home/Home";
 import { UserRoleProvider } from "./context/UserRoleContext";
@@ -17,6 +16,7 @@ import CandidatesList from "./admin/candidate/CandidatesList";
 import VotersList from "./admin/voter/VotersList";
 import DevicesList from "./admin/device/DeviceList";
 import LocationsList from "./admin/locations/LocationsList";
+import ElectionDetails from "./admin/election/ElectionDetails";
 function App() {
   return (
     <Router>
@@ -52,6 +52,15 @@ function App() {
               </RoleBasedAccess>
             }
           />
+          <Route
+            path="/elections/:id/details"
+            element={
+              <RoleBasedAccess roles={["ADMIN"]}>
+                <ElectionDetails />
+              </RoleBasedAccess>
+            }
+          />
+
           <Route
             path="/candidates"
             element={

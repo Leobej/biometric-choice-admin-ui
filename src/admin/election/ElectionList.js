@@ -7,7 +7,8 @@ import PageNavigation from "../genericlistcomponents/PageNavigation";
 
 import ActionBar from "../genericlistcomponents/ActionBar";
 import EditElectionModal from "./EditElectionModal";
-import AddElectionModal from "./AddElectionModal";  // Import CreateElectionModal component
+import AddElectionModal from "./AddElectionModal";
+import { useNavigate } from "react-router";
 
 const ElectionsList = () => {
   const [elections, setElections] = useState([]);
@@ -15,9 +16,9 @@ const ElectionsList = () => {
   const [currentPage, setCurrentPage] = useState(0);
   const [selectedElection, setSelectedElection] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [modalType, setModalType] = useState(null);  // 'add', 'edit', or 'delete'
+  const [modalType, setModalType] = useState(null); // 'add', 'edit', or 'delete'
   const [searchQuery, setSearchQuery] = useState("");
-
+  const navigate = useNavigate();
   const onAddClick = () => {
     setModalType("add");
     setIsModalOpen(true);
@@ -54,6 +55,18 @@ const ElectionsList = () => {
     { label: "Description", key: "description" },
     { label: "Created at", key: "createdAt" },
     { label: "Location", key: "location" },
+    {
+      label: 'Actions',
+      key: 'actions',
+      render: (election) => (
+        <button
+          onClick={() => navigate(`/elections/${election.electionId}/details`)}
+          className="text-white bg-blue-500 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 text-center mr-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+        >
+          Show Details
+        </button>
+      ),
+    },
   ];
 
   useEffect(() => {
@@ -158,10 +171,7 @@ const ElectionsList = () => {
       />
 
       {isModalOpen && modalType === "add" && (
-        <AddElectionModal
-          isOpen={isModalOpen}
-          closeModal={handleModalClose}
-        />
+        <AddElectionModal isOpen={isModalOpen} closeModal={handleModalClose} />
       )}
       {isModalOpen && modalType === "edit" && (
         <EditElectionModal
@@ -175,7 +185,9 @@ const ElectionsList = () => {
         <GenericModal
           isOpen={isModalOpen}
           closeModal={handleModalClose}
-          title={`${modalType.charAt(0).toUpperCase() + modalType.slice(1)} Election`}
+          title={`${
+            modalType.charAt(0).toUpperCase() + modalType.slice(1)
+          } Election`}
           footer={footerMap[modalType]}
         >
           {modalType === "delete" ? (
@@ -184,7 +196,10 @@ const ElectionsList = () => {
             <GenericForm
               initialValues={modalType === "edit" ? selectedElection : {}}
               onSubmit={handleSave}
-              fields={fields.map((field) => ({ ...field, type: field.type || "text" }))}
+              fields={fields.map((field) => ({
+                ...field,
+                type: field.type || "text",
+              }))}
               id="generic-form"
             />
           )}

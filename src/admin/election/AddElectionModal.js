@@ -53,8 +53,6 @@ const AddElectionModal = ({ isOpen, closeModal }) => {
     }
   };
 
-  
-
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -65,11 +63,19 @@ const AddElectionModal = ({ isOpen, closeModal }) => {
   useEffect(() => {
     const fetchLocations = async () => {
       const token = localStorage.getItem("token");
-      const response = await axios.get("http://localhost:8080/locations", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setLocations(response.data); // Assuming the response data is an array of location objects
+      try {
+        const response = await axios.get("http://localhost:8080/locations", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        // Access the `content` field of the paginated response to get the array
+        setLocations(response.data.content);
+        console.log(response.data.content); // Check the actual response here
+      } catch (error) {
+        console.error("Error fetching locations:", error);
+        setLocations([]); // Reset locations on error
+      }
     };
+
     fetchLocations();
   }, []);
 
@@ -193,7 +199,7 @@ const AddElectionModal = ({ isOpen, closeModal }) => {
                     Start Date:
                   </label>
                   <input
-                    type="date"
+                    type="datetime-local"
                     id="startDate"
                     name="startDate"
                     value={startDate}
@@ -202,33 +208,13 @@ const AddElectionModal = ({ isOpen, closeModal }) => {
                     className="form-input mt-1 block w-full"
                   />
                 </div>
-                <div className="mt-4">
-          <label htmlFor="location" className="block text-gray-700">
-            Location:
-          </label>
-          <select
-            id="location"
-            name="location"
-            value={location}
-            onChange={(e) => setLocation(e.target.value)}
-            required
-            className="form-select mt-1 block w-full"
-          >
-            <option value="">Select a location</option>
-            {locations.map((loc) => (
-              <option key={loc.locationId} value={loc.city}>
-                {loc.city}, {loc.street}
-              </option>
-            ))}
-          </select>
-        </div>
 
                 <div className="mt-4">
                   <label htmlFor="endDate" className="block text-gray-700">
                     End Date:
                   </label>
                   <input
-                    type="date"
+                    type="datetime-local"
                     id="endDate"
                     name="endDate"
                     value={endDate}
@@ -237,6 +223,28 @@ const AddElectionModal = ({ isOpen, closeModal }) => {
                     className="form-input mt-1 block w-full"
                   />
                 </div>
+
+                <div className="mt-4">
+                  <label htmlFor="location" className="block text-gray-700">
+                    Location:
+                  </label>
+                  <select
+                    id="location"
+                    name="location"
+                    value={location}
+                    onChange={(e) => setLocation(e.target.value)}
+                    required
+                    className="form-select mt-1 block w-full"
+                  >
+                    <option value="">Select a location</option>
+                    {locations.map((loc) => (
+                      <option key={loc.locationId} value={loc.city}>
+                        {loc.city}, {loc.street}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
                 <div className="px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
                   <span className="flex w-full rounded-md shadow-sm sm:ml-3 sm:w-auto">
                     <button
