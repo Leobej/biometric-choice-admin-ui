@@ -51,26 +51,39 @@ const VotersList = () => {
   ];
 
   useEffect(() => {
-    fetchVoters();
+    fetchVoters(currentPage, 10, searchQuery);
   }, []);
 
   const fetchVoters = async (page = 0, size = 10, searchQuery = "") => {
     const token = localStorage.getItem("token");
-    const response = await axios.get(
-      `http://localhost:8080/voters?page=${page}&size=${size}&query=${searchQuery}`,
-      {
+    // Prepare the base URL and parameters
+    let url = new URL(`http://localhost:8080/voters`);
+    let params = { page: page, size: size };
+    // If there's a search query, use it to search by both first name and last name
+    if (searchQuery) {
+      params["search"] = searchQuery;
+    }
+    // Append the search parameters to the URL
+    url.search = new URLSearchParams(params).toString();
+
+    try {
+      const response = await axios.get(url, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
+      });
+      console.log("Response:", response);
+      // Update the state with the fetched data
+      if (response.status === 200) {
+        setVoters(response.data.content);
+        setTotalPages(response.data.totalPages);
+        setCurrentPage(page);
+      } else {
+        setVoters([]);
+        setTotalPages(0);
       }
-    );
-
-    if (response.data.content.length > 0) {
-      setVoters(response.data.content);
-      setTotalPages(response.data.totalPages);
-      setCurrentPage(page);
-    } else {
-      setVoters([]);
+    } catch (error) {
+      console.error("Error fetching voters:", error);
     }
   };
 
@@ -171,16 +184,17 @@ const VotersList = () => {
         idField="voterId"
       />
 
-{isModalOpen && (
-        modalType === 'edit' ? (
+      {isModalOpen &&
+        (modalType === "edit" ? (
           <EditVoterModal
             isOpen={isModalOpen}
             closeModal={handleModalClose}
             voter={selectedVoter}
             saveVoter={handleSave}
+            refreshVoters={fetchVoters} 
           />
-        ) : modalType === 'add' ? (   // Check if modalType is 'add'
-          <AddVoterModal   // Render the AddVoterModal when modalType is 'add'
+        ) : modalType === "add" ? ( // Check if modalType is 'add'
+          <AddVoterModal // Render the AddVoterModal when modalType is 'add'
             isOpen={isModalOpen}
             closeModal={handleModalClose}
           />
@@ -188,13 +202,14 @@ const VotersList = () => {
           <GenericModal
             isOpen={isModalOpen}
             closeModal={handleModalClose}
-            title={`${modalType.charAt(0).toUpperCase() + modalType.slice(1)} Voter`}
+            title={`${
+              modalType.charAt(0).toUpperCase() + modalType.slice(1)
+            } Voter`}
             footer={footerMap[modalType]}
           >
             {/* ... rest of your code ... */}
           </GenericModal>
-        )
-      )}
+        ))}
 
       <PageNavigation
         totalPages={totalPages}

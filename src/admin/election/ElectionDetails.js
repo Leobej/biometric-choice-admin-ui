@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import CandidateSelector from "./CandidateSelector"; // Make sure this component exists
+import CandidateSelector from "./CandidateSelector"; // Ensure this component exists
 import {
   LineChart,
   Line,
@@ -18,37 +18,40 @@ const ElectionDetails = () => {
   const [electionData, setElectionData] = useState({
     candidates: [],
     electionResults: [],
-  }); // Initialize to prevent map errors
+  });
+
   const [votingTrends, setVotingTrends] = useState([]);
+  const [votesByCandidate, setVotesByCandidate] = useState({});
+  const [totalVotes, setTotalVotes] = useState(0);
   const [selectedCandidateId, setSelectedCandidateId] = useState("");
-  const [aggregatedVotes, setAggregatedVotes] = useState({}); // Add this line
 
   const fetchVotingTrends = (candidateId) => {
     const token = localStorage.getItem("token");
-    // Adjust the URL based on whether a candidate is selected or not
-    const url = candidateId
-      ? `/elections/${id}/voting-trends/${candidateId}`
-      : `/elections/${id}/voting-trends`;
+    const baseUrl = `/elections/${id}/voting-trends`;
+    const url = candidateId ? `${baseUrl}/${candidateId}` : baseUrl;
 
     axios
-      .get(url, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
+      .get(url, { headers: { Authorization: `Bearer ${token}` } })
       .then((response) => {
         const formattedTrends = response.data.map((trend) => ({
           date: new Date(trend.date).toLocaleDateString("en-US"),
           totalVotes: trend.totalVotes,
+          candidateId: trend.candidateIdResult,
         }));
-        setVotingTrends(formattedTrends); // Debugging log
+        setVotingTrends(formattedTrends);
       })
       .catch((error) => console.log(error));
   };
 
-  // When a candidate is selected, update the trends
   const handleSelectCandidate = (candidateId) => {
     setSelectedCandidateId(candidateId);
     fetchVotingTrends(candidateId);
   };
+
+  useEffect(() => {
+    const newTotalVotes = Object.values(votesByCandidate).reduce((acc, current) => acc + current, 0);
+    setTotalVotes(newTotalVotes);
+  }, [votesByCandidate]);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -63,52 +66,38 @@ const ElectionDetails = () => {
         headers: { Authorization: `Bearer ${token}` },
       })
       .then((response) => {
-        setElectionData(response.data); // Set the response data to state
-      })
-      .catch((error) => console.log(error));
+        setElectionData(response.data);
 
-    // Fetch voting trends
-    axios
-      .get(`/elections/${id}/voting-trends`, {
-        headers: { Authorization: `Bearer ${token}` },
+        // Fetch aggregated votes for all candidates
+        return axios.get(`/elections/${id}/aggregated-votes`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
       })
       .then((response) => {
-        const formattedTrends = response.data.map((trend) => ({
-          ...trend,
-          date: new Date(trend.date).toLocaleDateString("en-US"), // Converts to MM/DD/YYYY format
-          totalVotes: trend.totalVotes,
-        }));
-
-        setVotingTrends(formattedTrends); // Set the voting trends data to state
-      })
-      .catch((error) => console.log(error));
-
-    axios
-      .get(`/elections/${id}/voting-trends`, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-      .then((response) => {
-        console.log("Voting Trends Data:", response.data); // Log the raw data
-
-        const votesAggregation = response.data.reduce((acc, item) => {
-          const candidateKey = item.candidateId; // Convert candidateId to string
-          acc[candidateKey] = (acc[candidateKey] || 0) + item.totalVotes;
+        const initialVotesByCandidate = response.data.reduce((acc, current) => {
+          acc[current.candidateId] = current.voteCount;
           return acc;
         }, {});
+        setVotesByCandidate(initialVotesByCandidate);
 
-        setAggregatedVotes(votesAggregation);
-        console.log("Aggregated Votes:", votesAggregation); // Log the aggregated votes
-      })
-      .catch((error) => console.log(error));
-
-    axios
-      .get(`/elections/${id}/aggregated-votes`, {
-        headers: { Authorization: `Bearer ${token}` },
+        // Fetch overall voting trends
+        return axios.get(`/elections/${id}/voting-trends`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
       })
       .then((response) => {
-        setAggregatedVotes(response.data); // Assuming response.data is an object with candidateId as keys and vote count as values
+        const trendsData = response.data;
+        const formattedTrends = trendsData.map((trend) => {
+          const date = new Date(trend.date).toLocaleDateString("en-US");
+          return {
+            date: date,
+            totalVotes: trend.totalVotes,
+            candidateId: trend.candidateIdResult,
+          };
+        });
+        setVotingTrends(formattedTrends);
       })
-      .catch((error) => console.log(error));
+      .catch((error) => console.error(error));
   }, [id]);
 
   if (!electionData) {
@@ -116,48 +105,56 @@ const ElectionDetails = () => {
   }
 
   return (
-    <div>
-      <h1>Election Details for ID: {id}</h1>
-      <h2>Description: {electionData.description}</h2>
-      <h2>Location: {electionData.location}</h2>
-      <h2>Active: {electionData.active ? "Yes" : "No"}</h2>
+    <div className="container mx-auto p-4">
+      <h1 className="text-2xl font-bold text-center mb-6">Election Details for ID: {id}</h1>
+      <div className="mb-4">
+        <p className="text-lg"><strong>Description:</strong> {electionData.description}</p>
+        <p className="text-lg mb-6"><strong>Active:</strong> {electionData.active ? "Yes" : "No"}</p>
+      </div>
 
-      <h3>Election Results:</h3>
-      {electionData.candidates.map((candidate, index) => {
-        const candidateKey = candidate.candidateId.toString();
-        const totalVotes = aggregatedVotes[candidateKey] || 0;
-        return (
-          <p key={index}>
-            {candidate.firstname} {candidate.lastname} - {candidate.party}:{" "}
-            {totalVotes} votes
-          </p>
-        );
-      })}
+      <div className="mb-8">
+        <h2 className="text-xl font-bold mb-3">Total Votes: {totalVotes}</h2>
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          {electionData.candidates.map((candidate, index) => (
+            <div key={index} className="bg-white shadow-md rounded-lg p-6 text-center">
+              <h4 className="font-bold text-lg mb-2">
+                {candidate.firstname} {candidate.lastname}
+              </h4>
+              <p className="text-md mb-2">Party: {candidate.party}</p>
+              <p className="text-md font-semibold">Votes: {votesByCandidate[candidate.candidateId] || 0}</p>
+            </div>
+          ))}
+        </div>
+      </div>
 
-      <CandidateSelector
-        candidates={electionData.candidates}
-        onSelectCandidate={handleSelectCandidate}
-        selectedCandidateId={selectedCandidateId}
-      />
+      <div className="mb-8">
+        <CandidateSelector
+          candidates={electionData.candidates}
+          onSelectCandidate={handleSelectCandidate}
+          selectedCandidateId={selectedCandidateId}
+        />
+      </div>
 
-      <ResponsiveContainer width="100%" height={300}>
-        <LineChart
-          data={votingTrends}
-          margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-        >
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="date" />
-          <YAxis allowDecimals={false} />
-          <Tooltip />
-          <Legend />
-          <Line
-            type="monotone"
-            dataKey="totalVotes"
-            stroke="#8884d8"
-            activeDot={{ r: 8 }}
-          />
-        </LineChart>
-      </ResponsiveContainer>
+      <div className="mb-8">
+        <ResponsiveContainer width="100%" height={400}>
+          <LineChart
+            data={votingTrends}
+            margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+          >
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="date" />
+            <YAxis allowDecimals={false} />
+            <Tooltip />
+            <Legend />
+            <Line
+              type="monotone"
+              dataKey="totalVotes"
+              stroke="#8884d8"
+              activeDot={{ r: 8 }}
+            />
+          </LineChart>
+        </ResponsiveContainer>
+      </div>
     </div>
   );
 };

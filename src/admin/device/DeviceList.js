@@ -47,7 +47,6 @@ const DevicesList = () => {
   };
 
   const fields = [
-    { label: "Device id", key: "id" },
     { label: "Device name", key: "name" },
     { label: "Device Type", key: "type" },
     { label: "Device Status", key: "status" },
@@ -59,21 +58,27 @@ const DevicesList = () => {
 
   const fetchDevices = async (page = 0, size = 10, searchQuery = "") => {
     const token = localStorage.getItem("token");
-    const response = await axios.get(
-      `http://localhost:8080/devices?page=${page}&size=${size}&query=${searchQuery}`,
-      {
+    try {
+      const response = await axios.get(`http://localhost:8080/devices`, {
+        params: {
+          page,
+          size,
+          search: searchQuery, // Assuming your API accepts a 'search' query parameter
+        },
         headers: {
           Authorization: `Bearer ${token}`,
         },
+      });
+      if (response.data && response.data.content) {
+        setDevices(response.data.content);
+        setTotalPages(response.data.totalPages);
+        setCurrentPage(page);
+      } else {
+        setDevices([]);
       }
-    );
-
-    if (response.data.content.length > 0) {
-      setDevices(response.data.content);
-      setTotalPages(response.data.totalPages);
-      setCurrentPage(page);
-    } else {
-      setDevices([]);
+    } catch (error) {
+      console.error("Error fetching devices:", error);
+      // Handle error
     }
   };
 
@@ -171,7 +176,7 @@ const DevicesList = () => {
         onRowClick={onRowClick}
         selectedData={selectedDevice}
         columns={fields}
-        idField="deviceId"
+        idField="id"
       />
 
       {modalType === "add" && (
@@ -179,6 +184,7 @@ const DevicesList = () => {
           isOpen={isModalOpen}
           closeModal={handleModalClose}
           saveDevice={handleSave}
+          refreshDevices={fetchDevices}
         />
       )}
 
@@ -188,6 +194,7 @@ const DevicesList = () => {
           closeModal={handleModalClose}
           device={selectedDevice}
           saveDevice={handleSave}
+          refreshDevices={fetchDevices}
         />
       )}
 

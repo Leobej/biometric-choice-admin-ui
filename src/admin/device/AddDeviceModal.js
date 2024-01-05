@@ -1,13 +1,39 @@
 import React, { useState } from "react";
+import axios from "axios";
+const AddDeviceModal = ({ isOpen, closeModal, refreshDevices }) => {
+  const [name, setName] = useState("");
+  const [type, setType] = useState("");
+  const [status, setStatus] = useState("");
 
-const AddDeviceModal = ({ isOpen, closeModal, saveDevice }) => {
-  const [deviceName, setDeviceName] = useState('');
-  const [deviceId, setDeviceId] = useState('');
+  const handleSubmit = async (event) => {
+    event.preventDefault(); // Keep this line only
 
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    saveDevice({ deviceName, deviceId });
-    closeModal();
+    const newDevice = { name, type, status };
+    console.log("Sending devic3e data:", newDevice);
+
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.post(
+        `http://localhost:8080/devices`,
+        { name: name, type: type, status: status },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (response.status === 200 || response.status === 201) {
+        alert("Device added successfully");
+        refreshDevices();
+        closeModal();
+      } else {
+        // Handle other successful statuses if necessary
+      }
+    } catch (error) {
+      console.error("Error adding device:", error);
+      alert("Error adding device. Please try again.");
+    }
   };
 
   if (!isOpen) {
@@ -35,20 +61,32 @@ const AddDeviceModal = ({ isOpen, closeModal, saveDevice }) => {
                     type="text"
                     className="form-input mt-1 block w-full"
                     placeholder="Device Name"
-                    value={deviceName}
-                    onChange={(e) => setDeviceName(e.target.value)}
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
                   />
                 </label>
               </div>
               <div className="mt-4">
                 <label className="block">
-                  <span className="text-gray-700">Device ID</span>
+                  <span className="text-gray-700">Device Type</span>
                   <input
                     type="text"
                     className="form-input mt-1 block w-full"
-                    placeholder="Device ID"
-                    value={deviceId}
-                    onChange={(e) => setDeviceId(e.target.value)}
+                    placeholder="Device Type"
+                    value={type}
+                    onChange={(e) => setType(e.target.value)}
+                  />
+                </label>
+              </div>
+              <div className="mt-4">
+                <label className="block">
+                  <span className="text-gray-700">Device Status</span>
+                  <input
+                    type="text"
+                    className="form-input mt-1 block w-full"
+                    placeholder="Device Status"
+                    value={status}
+                    onChange={(e) => setStatus(e.target.value)}
                   />
                 </label>
               </div>

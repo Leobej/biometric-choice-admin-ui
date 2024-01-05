@@ -23,6 +23,7 @@ const LocationsList = () => {
   };
 
   const onRowClick = (item) => {
+    console.log("Row clicked:", item);
     setSelectedLocation(item);
   };
 
@@ -50,9 +51,11 @@ const LocationsList = () => {
   };
 
   const fields = [
-    { label: "Name", key: "name" },
-    { label: "Address", key: "address" },
     { label: "City", key: "city" },
+    { label: "Postal Code", key: "postalCode" },
+    { label: "Country", key: "country" },
+    { label: "Street", key: "street" },
+    { label: "Number", key: "number" },
   ];
 
   useEffect(() => {
@@ -62,7 +65,7 @@ const LocationsList = () => {
   const fetchLocations = async (page = 0, size = 10, searchQuery = "") => {
     const token = localStorage.getItem("token");
     const response = await axios.get(
-      `http://localhost:8080/locations?page=${page}&size=${size}&name=${searchQuery}`,
+      `http://localhost:8080/locations?page=${page}&size=${size}&searchTerm=${searchQuery}`,
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -98,16 +101,10 @@ const LocationsList = () => {
   const footerMap = {
     delete: (
       <>
-        <button
-          type="button"
-          onClick={handleDeleteConfirm}
-        >
+        <button type="button" onClick={handleDeleteConfirm}>
           Delete
         </button>
-        <button
-          type="button"
-          onClick={handleModalClose}
-        >
+        <button type="button" onClick={handleModalClose}>
           Cancel
         </button>
       </>
@@ -160,6 +157,7 @@ const LocationsList = () => {
         <AddLocationModal
           isOpen={isModalOpen}
           closeModal={handleModalClose}
+          refreshLocations={fetchLocations}
         />
       )}
       {isModalOpen && modalType === "edit" && (
@@ -168,13 +166,16 @@ const LocationsList = () => {
           closeModal={handleModalClose}
           location={selectedLocation}
           saveLocation={handleSave}
+          refreshLocations={fetchLocations}
         />
       )}
       {isModalOpen && modalType !== "add" && modalType !== "edit" && (
         <GenericModal
           isOpen={isModalOpen}
           closeModal={handleModalClose}
-          title={`${modalType.charAt(0).toUpperCase() + modalType.slice(1)} Location`}
+          title={`${
+            modalType.charAt(0).toUpperCase() + modalType.slice(1)
+          } Location`}
           footer={footerMap[modalType]}
         >
           {modalType === "delete" ? (
@@ -183,7 +184,10 @@ const LocationsList = () => {
             <GenericForm
               initialValues={modalType === "edit" ? selectedLocation : {}}
               onSubmit={handleSave}
-              fields={fields.map((field) => ({ ...field, type: field.type || "text" }))}
+              fields={fields.map((field) => ({
+                ...field,
+                type: field.type || "text",
+              }))}
               id="generic-form"
             />
           )}

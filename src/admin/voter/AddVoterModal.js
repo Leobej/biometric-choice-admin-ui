@@ -1,22 +1,55 @@
 import React, { useState } from "react";
+import axios from "axios";
 
 const AddVoterModal = ({ isOpen, closeModal }) => {
   const [cnp, setCnp] = useState("");
-  const [createdAt, setCreatedAt] = useState("");
-  const [fingerprintId, setFingerprintId] = useState(null);
+  const [fingerprintId, setFingerprintId] = useState("");
   const [firstname, setFirstname] = useState("");
   const [lastname, setLastname] = useState("");
   const [password, setPassword] = useState("");
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
 
-    closeModal();
+    const voterData = {
+      firstname,
+      lastname,
+      cnp,
+      password,
+      fingerprintId, // Assuming fingerprintId is a string. If it's a number, convert it before sending.
+    };
+
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.post("http://localhost:8080/voters/register", voterData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (response.status === 201 || response.status === 200) {
+        alert("Voter added successfully!");
+        resetForm();
+        closeModal();
+      }
+    } catch (error) {
+      console.error("Error adding voter:", error);
+      alert("Error adding voter. Please try again.");
+    }
+  };
+
+  const resetForm = () => {
+    setCnp("");
+    setFingerprintId("");
+    setFirstname("");
+    setLastname("");
+    setPassword("");
   };
 
   if (!isOpen) {
     return null;
   }
+  
 
   return (
     <div className="fixed z-10 inset-0 overflow-y-auto">
@@ -47,20 +80,7 @@ const AddVoterModal = ({ isOpen, closeModal }) => {
                   className="form-input mt-1 block w-full"
                 />
               </div>
-              <div className="mt-4">
-                <label htmlFor="createdAt" className="block text-gray-700">
-                  Created At:
-                </label>
-                <input
-                  type="text"
-                  id="createdAt"
-                  name="createdAt"
-                  value={createdAt}
-                  onChange={(event) => setCreatedAt(event.target.value)}
-                  required
-                  className="form-input mt-1 block w-full"
-                />
-              </div>
+            
               <div className="mt-4">
                 <label htmlFor="fingerprintId" className="block text-gray-700">
                   Fingerprint ID:

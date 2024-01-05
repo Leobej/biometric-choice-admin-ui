@@ -1,20 +1,53 @@
 import React, { useState, useEffect } from "react";
-
-const EditDeviceModal = ({ isOpen, closeModal, device, saveDevice }) => {
-  const [deviceName, setDeviceName] = useState(device ? device.deviceName : '');
-  const [deviceId, setDeviceId] = useState(device ? device.deviceId : '');
+import axios from "axios";
+const EditDeviceModal = ({ isOpen, closeModal, device, refreshDevices }) => {
+  const [name, setName] = useState("");
+  const [type, setType] = useState("");
+  const [status, setStatus] = useState("");
 
   useEffect(() => {
     if (device) {
-      setDeviceName(device.deviceName);
-      setDeviceId(device.deviceId);
+      setName(device.name);
+      setType(device.type);
+      setStatus(device.status);
     }
   }, [device]);
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    saveDevice({ ...device, deviceName, deviceId });
+    const updatedDevice = {
+      ...device,
+      name,
+      type,
+      status,
+    };
+    saveDevice(updatedDevice);
     closeModal();
+  };
+
+  const saveDevice = async (updatedDevice) => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.put(
+        `http://localhost:8080/devices/${updatedDevice.id}`, // Your API endpoint
+        updatedDevice,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (response.status === 200) {
+        alert("Device updated successfully");
+        refreshDevices();
+        // Refresh your devices list here
+      }
+    } catch (error) {
+      console.error("Error updating device:", error);
+      alert("Error updating device. Please try again.");
+    }
+   
   };
 
   if (!isOpen) {
@@ -42,20 +75,32 @@ const EditDeviceModal = ({ isOpen, closeModal, device, saveDevice }) => {
                     type="text"
                     className="form-input mt-1 block w-full"
                     placeholder="Device Name"
-                    value={deviceName}
-                    onChange={(e) => setDeviceName(e.target.value)}
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
                   />
                 </label>
               </div>
               <div className="mt-4">
                 <label className="block">
-                  <span className="text-gray-700">Device ID</span>
+                  <span className="text-gray-700">Device Type</span>
                   <input
                     type="text"
                     className="form-input mt-1 block w-full"
-                    placeholder="Device ID"
-                    value={deviceId}
-                    onChange={(e) => setDeviceId(e.target.value)}
+                    placeholder="Device Type"
+                    value={type}
+                    onChange={(e) => setType(e.target.value)}
+                  />
+                </label>
+              </div>
+              <div className="mt-4">
+                <label className="block">
+                  <span className="text-gray-700">Device Status</span>
+                  <input
+                    type="text"
+                    className="form-input mt-1 block w-full"
+                    placeholder="Device Status"
+                    value={status}
+                    onChange={(e) => setStatus(e.target.value)}
                   />
                 </label>
               </div>

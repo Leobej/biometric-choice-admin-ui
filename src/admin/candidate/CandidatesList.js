@@ -50,25 +50,30 @@ const CandidatesList = () => {
     { label: "First Name", key: "firstname" },
     { label: "Last Name", key: "lastname" },
     { label: "Party", key: "party" },
+    { label: "Position", key: "position" },
     { label: "Description", key: "description" },
   ];
 
   useEffect(() => {
     fetchCandidates();
-  }, []);
+  }, [searchQuery]);
 
   const fetchCandidates = async (page = 0, size = 10, searchQuery = "") => {
     const token = localStorage.getItem("token");
     const response = await axios.get(
-      `http://localhost:8080/candidates?page=${page}&size=${size}&query=${searchQuery}`,
+      `http://localhost:8080/candidates?page=${page}&size=${size}&firstname=${encodeURIComponent(
+        searchQuery
+      )}&lastname=${encodeURIComponent(searchQuery)}`,
+
       {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       }
     );
-
+    console.log(searchQuery);
     if (response.data.content.length > 0) {
+      console.log(response.data.content);
       setCandidates(response.data.content);
       setTotalPages(response.data.totalPages);
       setCurrentPage(page);
@@ -83,10 +88,53 @@ const CandidatesList = () => {
     setSelectedCandidate(null);
   };
 
-  const handleSave = async (values) => {
-    // Save candidate logic...
-    handleModalClose();
-    fetchCandidates();
+  const handleSave = async (candidate) => {
+    try {
+      const token = localStorage.getItem("token");
+      const config = {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      };
+
+      let response;
+      if (modalType === "add") {
+        // Logic for adding a new candidate
+        const formData = new FormData();
+        // Add candidate fields to formData
+        formData.append("firstName", candidate.firstName);
+        formData.append("lastName", candidate.lastName);
+        formData.append("party", candidate.party);
+        formData.append("position", candidate.position);
+        // Add image if it exists
+        if (candidate.image) {
+          formData.append("image", candidate.image);
+        }
+        response = await axios.post(
+          "http://localhost:8080/candidates",
+          formData,
+          config
+        );
+      } else if (modalType === "edit") {
+        // Logic for editing an existing candidate
+        response = await axios.put(
+          `http://localhost:8080/candidates/${candidate.candidateId}`,
+          candidate,
+          config
+        );
+      }
+
+      if (response.status === 200 || response.status === 201) {
+        alert("Candidate saved successfully!");
+        handleModalClose();
+        fetchCandidates(currentPage, 10, searchQuery);
+      } else {
+        alert("Failed to save candidate.");
+      }
+    } catch (error) {
+      console.error("Error saving candidate:", error);
+      alert("Error saving candidate. Please try again.");
+    }
   };
 
   const handleDeleteConfirm = async () => {

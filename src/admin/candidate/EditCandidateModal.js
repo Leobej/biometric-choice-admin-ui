@@ -1,16 +1,27 @@
 import React, { useState, useEffect } from "react";
 
-const EditCandidateModal = ({ isOpen, closeModal, candidate, saveCandidate }) => {
+const EditCandidateModal = ({
+  isOpen,
+  closeModal,
+  candidate,
+  saveCandidate,
+}) => {
   // Local state to track the form field values
-  const [firstname, setFirstName] = useState(candidate ? candidate.firstname : '');
-  const [lastname, setLastName] = useState(candidate ? candidate.lastname : '');
-  const [party, setParty] = useState(candidate ? candidate.party : '');
+  const [firstname, setFirstName] = useState(
+    candidate ? candidate.firstname : ""
+  );
+  const [lastname, setLastName] = useState(candidate ? candidate.lastname : "");
+  const [party, setParty] = useState(candidate ? candidate.party : "");
+  const [position, setPosition] = useState(candidate ? candidate.position : "");
+  const [image, setImage] = useState(candidate ? candidate.image : "");
 
   useEffect(() => {
     if (candidate) {
       setFirstName(candidate.firstname);
       setLastName(candidate.lastname);
       setParty(candidate.party);
+      setPosition(candidate.position);
+      setImage(candidate.image);
     }
   }, [candidate]);
 
@@ -22,6 +33,8 @@ const EditCandidateModal = ({ isOpen, closeModal, candidate, saveCandidate }) =>
       firstname,
       lastname,
       party,
+      position,
+      image,
     });
 
     closeModal();
@@ -44,7 +57,7 @@ const EditCandidateModal = ({ isOpen, closeModal, candidate, saveCandidate }) =>
           aria-modal="true"
           aria-labelledby="modal-headline"
         >
-         <form onSubmit={handleSubmit}>
+          <form onSubmit={handleSubmit}>
             <div className="px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
               <div>
                 <label className="block">
@@ -82,7 +95,31 @@ const EditCandidateModal = ({ isOpen, closeModal, candidate, saveCandidate }) =>
                   />
                 </label>
               </div>
+              <div className="mt-4">
+                <label className="block">
+                  <span className="text-gray-700">Position</span>
+                  <input
+                    type="text"
+                    className="form-input mt-1 block w-full"
+                    placeholder="Position"
+                    value={position}
+                    onChange={(e) => setPosition(e.target.value)}
+                  />
+                </label>
+              </div>
             </div>
+            <div className="mt-4">
+                <label className="block">
+                  <span className="text-gray-700">Candidate Image</span>
+                  <input
+                    type="file"
+                    className="form-input mt-1 block w-full"
+                    onChange={(event) => setImage(event.target.files[0])}
+                  />
+                </label>
+              </div>
+
+
             <div className="px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
               <span className="flex w-full rounded-md shadow-sm sm:ml-3 sm:w-auto">
                 <button

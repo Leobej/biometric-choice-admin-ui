@@ -36,27 +36,29 @@ const AddCandidateModal = ({ isOpen, closeModal }) => {
     formData.append("lastName", lastName);
     formData.append("party", party);
     formData.append("position", position);
-    formData.append("image", image);
+    if (image) {
+        formData.append("image", image);
+    }
 
     try {
-      const token = localStorage.getItem("token");
-      const response = await axios.post("http://localhost:8080/candidates", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-          Authorization: `Bearer ${token}`,
-        },
-      });
+        const token = localStorage.getItem("token");
+        const response = await axios.post("http://localhost:8080/candidates", formData, {
+            headers: {
+                "Content-Type": "multipart/form-data",
+                Authorization: `Bearer ${token}`,
+            },
+        });
 
-      if (response.status === 200) {
-        alert("Candidate created successfully!");
-        resetForm();
-        closeModal();
-      }
+        if (response.status === 201 || response.status === 200) {
+            alert("Candidate created successfully!");
+            resetForm();
+            closeModal();
+        }
     } catch (error) {
-      console.error("Error creating candidate:", error);
-      alert("Error creating candidate. Please try again.");
+        console.error("Error creating candidate:", error);
+        alert("Error creating candidate. Please try again.");
     }
-  };
+};
 
   if (!isOpen) {
     return null;

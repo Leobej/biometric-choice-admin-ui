@@ -1,35 +1,63 @@
 import React, { useState, useEffect } from "react";
+import axios from "axios";
 
-const EditVoterModal = ({ isOpen, closeModal, voter, saveVoter }) => {
+const EditVoterModal = ({ isOpen, closeModal, voter, refreshVoters }) => {
   // Local state to track the form field values
-  const [firstname, setFirstName] = useState(voter ? voter.firstname : '');
-  const [lastname, setLastName] = useState(voter ? voter.lastname : '');
-  const [cnp, setCnp] = useState(voter ? voter.cnp : '');  // new
-  const [password, setPassword] = useState('');  // new
-  const [fingerprintId, setFingerprintId] = useState(voter ? voter.fingerprintId : null);  // new
-  const [createdAt, setCreatedAt] = useState(voter ? voter.createdAt : '');  // new
+  const [firstname, setFirstName] = useState(voter ? voter.firstname : "");
+  const [lastname, setLastName] = useState(voter ? voter.lastname : "");
+  const [cnp, setCnp] = useState(voter ? voter.cnp : "");
+  const [password, setPassword] = useState("");
+  const [fingerprintId, setFingerprintId] = useState(
+    voter ? voter.fingerprintId : null
+  );
 
   useEffect(() => {
     if (voter) {
       setFirstName(voter.firstname);
       setLastName(voter.lastname);
-      setCnp(voter.cnp);  // new
-      setFingerprintId(voter.fingerprintId);  // new
-      setCreatedAt(voter.createdAt);  // new
+      setCnp(voter.cnp);
+      setFingerprintId(voter.fingerprintId);
+      // Not setting password because it's a sensitive field and should not be pre-populated
     }
   }, [voter]);
 
+  const saveVoter = async (updatedVoter) => {
+    try {
+      console.log(updatedVoter);
+      const token = localStorage.getItem("token");
+      const response = await axios.put(
+        `http://localhost:8080/voters`,
+        updatedVoter,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (
+        response.status === 200 ||
+        response.status === 201 ||
+        response.status === 202
+      ) {
+        alert("Voter updated successfully");
+        refreshVoters();
+      }
+    } catch (error) {
+      console.error("Error updating voter:", error);
+      alert("Error updating voter. Please try again.");
+    }
+  };
+
   const handleSubmit = (event) => {
     event.preventDefault();
-
     saveVoter({
       ...voter,
       firstname,
       lastname,
-      cnp,  // new
-      password,  // new
-      fingerprintId,  // new
-      createdAt  // new
+      cnp,
+      password, // Assuming password change is allowed
+      fingerprintId,
     });
 
     closeModal();
@@ -108,20 +136,8 @@ const EditVoterModal = ({ isOpen, closeModal, voter, saveVoter }) => {
                     type="text"
                     className="form-input mt-1 block w-full"
                     placeholder="Fingerprint ID"
-                    value={fingerprintId || ''}
+                    value={fingerprintId || ""}
                     onChange={(e) => setFingerprintId(e.target.value)}
-                  />
-                </label>
-              </div>
-              <div className="mt-4">
-                <label className="block">
-                  <span className="text-gray-700">Created At</span>
-                  <input
-                    type="text"
-                    className="form-input mt-1 block w-full"
-                    placeholder="Created At"
-                    value={createdAt}
-                    onChange={(e) => setCreatedAt(e.target.value)}
                   />
                 </label>
               </div>
