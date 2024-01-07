@@ -7,6 +7,7 @@ import PageNavigation from "../genericlistcomponents/PageNavigation";
 import ActionBar from "../genericlistcomponents/ActionBar";
 import EditCandidateModal from "./EditCandidateModal";
 import AddCandidateModal from "./AddCandidateModal";
+import NotificationBanner from "../genericlistcomponents/NotificationBanner";
 
 const CandidatesList = () => {
   const [candidates, setCandidates] = useState([]);
@@ -16,6 +17,11 @@ const CandidatesList = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalType, setModalType] = useState(null); // 'add', 'edit', or 'delete'
   const [searchQuery, setSearchQuery] = useState("");
+  const [notification, setNotification] = useState({
+    show: false,
+    message: "",
+    type: "",
+  });
 
   const onAddClick = () => {
     setModalType("add");
@@ -51,12 +57,22 @@ const CandidatesList = () => {
     { label: "Last Name", key: "lastname" },
     { label: "Party", key: "party" },
     { label: "Position", key: "position" },
-    { label: "Description", key: "description" },
   ];
 
   useEffect(() => {
     fetchCandidates();
   }, [searchQuery]);
+
+  // Function to show notification
+  const showNotification = (message, type) => {
+    setNotification({ show: true, message, type });
+    setTimeout(() => setNotification({ ...notification, show: false }), 5000);
+  };
+
+  // Function to close notification manually
+  const closeNotification = () => {
+    setNotification({ ...notification, show: false });
+  };
 
   const fetchCandidates = async (page = 0, size = 10, searchQuery = "") => {
     const token = localStorage.getItem("token");
@@ -86,55 +102,6 @@ const CandidatesList = () => {
     setIsModalOpen(false);
     setModalType(null);
     setSelectedCandidate(null);
-  };
-
-  const handleSave = async (candidate) => {
-    try {
-      const token = localStorage.getItem("token");
-      const config = {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      };
-
-      let response;
-      if (modalType === "add") {
-        // Logic for adding a new candidate
-        const formData = new FormData();
-        // Add candidate fields to formData
-        formData.append("firstName", candidate.firstName);
-        formData.append("lastName", candidate.lastName);
-        formData.append("party", candidate.party);
-        formData.append("position", candidate.position);
-        // Add image if it exists
-        if (candidate.image) {
-          formData.append("image", candidate.image);
-        }
-        response = await axios.post(
-          "http://localhost:8080/candidates",
-          formData,
-          config
-        );
-      } else if (modalType === "edit") {
-        // Logic for editing an existing candidate
-        response = await axios.put(
-          `http://localhost:8080/candidates/${candidate.candidateId}`,
-          candidate,
-          config
-        );
-      }
-
-      if (response.status === 200 || response.status === 201) {
-        alert("Candidate saved successfully!");
-        handleModalClose();
-        fetchCandidates(currentPage, 10, searchQuery);
-      } else {
-        alert("Failed to save candidate.");
-      }
-    } catch (error) {
-      console.error("Error saving candidate:", error);
-      alert("Error saving candidate. Please try again.");
-    }
   };
 
   const handleDeleteConfirm = async () => {
@@ -195,6 +162,13 @@ const CandidatesList = () => {
 
   return (
     <div className="flex flex-col justify-start items-center min-h-screen">
+      {notification.show && (
+        <NotificationBanner
+          message={notification.message}
+          type={notification.type}
+          onClose={closeNotification}
+        />
+      )}
       <div className="py-4 flex items-center">
         <div className="relative flex items-center">
           <input
@@ -240,13 +214,15 @@ const CandidatesList = () => {
             isOpen={isModalOpen}
             closeModal={handleModalClose}
             candidate={selectedCandidate}
-            saveCandidate={handleSave}
+            fetchCandidates={fetchCandidates}
+            showNotification={showNotification} 
           />
         ) : modalType === "add" ? (
           <AddCandidateModal
             isOpen={isModalOpen}
             closeModal={handleModalClose}
-            saveCandidate={handleSave}
+            fetchCandidates={fetchCandidates}
+            showNotification={showNotification}
           />
         ) : (
           <GenericModal
@@ -262,7 +238,6 @@ const CandidatesList = () => {
             ) : (
               <GenericForm
                 initialValues={modalType === "edit" ? selectedCandidate : {}}
-                onSubmit={handleSave}
                 fields={fields.map((field) => ({
                   ...field,
                   type: field.type || "text",
@@ -275,7 +250,9 @@ const CandidatesList = () => {
       <PageNavigation
         totalPages={totalPages}
         currentPage={currentPage}
-        handlePageNavigation={(newPage) => fetchCandidates(newPage, 10)}
+        handlePageNavigation={(newPage) =>
+          fetchCandidates(newPage, 10, searchQuery)
+        }
       />
     </div>
   );

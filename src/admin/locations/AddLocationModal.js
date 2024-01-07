@@ -1,6 +1,11 @@
 import React, { useState } from "react";
 import axios from "axios";
-const AddLocationModal = ({ isOpen, closeModal, refreshLocations }) => {
+const AddLocationModal = ({
+  isOpen,
+  closeModal,
+  refreshLocations,
+  showNotification,
+}) => {
   const [name, setName] = useState("");
   const [address, setAddress] = useState("");
   const [city, setCity] = useState("");
@@ -21,19 +26,17 @@ const AddLocationModal = ({ isOpen, closeModal, refreshLocations }) => {
       number,
     };
 
-    // Add logic to send a POST request to the backend
     try {
-      const token = localStorage.getItem("token"); // Assuming you're using token-based authentication
+      const token = localStorage.getItem("token");
       await axios.post("http://localhost:8080/locations", newLocation, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       });
-      refreshLocations(); // Refresh locations after adding
+      refreshLocations();
       closeModal();
+      showNotification("Location added successfully", "success");
     } catch (error) {
       console.error("Error adding location:", error);
-      alert("Error adding location. Please try again.");
+      showNotification("Error adding location. Please try again.", "error");
     }
   };
 

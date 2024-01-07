@@ -4,8 +4,8 @@ const EditLocationModal = ({
   isOpen,
   closeModal,
   location,
-
   refreshLocations,
+  showNotification,
 }) => {
   const [address, setAddress] = useState(location ? location.address : "");
   const [city, setCity] = useState(location ? location.city : "");
@@ -48,22 +48,19 @@ const EditLocationModal = ({
   const saveLocation = async (updatedLocation) => {
     try {
       const token = localStorage.getItem("token");
-      const response = await axios.put(
+      await axios.put(
         `http://localhost:8080/locations/${updatedLocation.locationId}`,
         updatedLocation,
         {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         }
       );
-      if (response.status === 200) {
-        alert("Location updated successfully");
-        refreshLocations();
-      }
+      refreshLocations();
+      closeModal();
+      showNotification("Location updated successfully", "success");
     } catch (error) {
       console.error("Error updating location:", error);
-      alert("Error updating location. Please try again.");
+      showNotification("Error updating location. Please try again.", "error");
     }
   };
 

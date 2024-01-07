@@ -1,6 +1,12 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-const EditDeviceModal = ({ isOpen, closeModal, device, refreshDevices }) => {
+const EditDeviceModal = ({
+  isOpen,
+  closeModal,
+  device,
+  refreshDevices,
+  showNotification,
+}) => {
   const [name, setName] = useState("");
   const [type, setType] = useState("");
   const [status, setStatus] = useState("");
@@ -39,15 +45,14 @@ const EditDeviceModal = ({ isOpen, closeModal, device, refreshDevices }) => {
       );
 
       if (response.status === 200) {
-        alert("Device updated successfully");
+        showNotification("Device updated successfully", "success");
         refreshDevices();
-        // Refresh your devices list here
+        closeModal();
       }
     } catch (error) {
       console.error("Error updating device:", error);
-      alert("Error updating device. Please try again.");
+      showNotification("Error updating device. Please try again.", "error");
     }
-   
   };
 
   if (!isOpen) {

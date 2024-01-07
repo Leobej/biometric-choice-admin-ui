@@ -1,12 +1,17 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 
-const EditVoterModal = ({ isOpen, closeModal, voter, refreshVoters }) => {
+const EditVoterModal = ({
+  isOpen,
+  closeModal,
+  voter,
+  refreshVoters,
+  showNotification,
+}) => {
   // Local state to track the form field values
   const [firstname, setFirstName] = useState(voter ? voter.firstname : "");
   const [lastname, setLastName] = useState(voter ? voter.lastname : "");
   const [cnp, setCnp] = useState(voter ? voter.cnp : "");
-  const [password, setPassword] = useState("");
   const [fingerprintId, setFingerprintId] = useState(
     voter ? voter.fingerprintId : null
   );
@@ -17,7 +22,6 @@ const EditVoterModal = ({ isOpen, closeModal, voter, refreshVoters }) => {
       setLastName(voter.lastname);
       setCnp(voter.cnp);
       setFingerprintId(voter.fingerprintId);
-      // Not setting password because it's a sensitive field and should not be pre-populated
     }
   }, [voter]);
 
@@ -40,12 +44,13 @@ const EditVoterModal = ({ isOpen, closeModal, voter, refreshVoters }) => {
         response.status === 201 ||
         response.status === 202
       ) {
-        alert("Voter updated successfully");
+        showNotification("Voter updated successfully", "success"); // Use showNotification
         refreshVoters();
+        closeModal();
       }
     } catch (error) {
       console.error("Error updating voter:", error);
-      alert("Error updating voter. Please try again.");
+      showNotification("Error updating voter. Please try again.", "error"); // Use showNotification
     }
   };
 
@@ -56,7 +61,6 @@ const EditVoterModal = ({ isOpen, closeModal, voter, refreshVoters }) => {
       firstname,
       lastname,
       cnp,
-      password, // Assuming password change is allowed
       fingerprintId,
     });
 
@@ -114,18 +118,6 @@ const EditVoterModal = ({ isOpen, closeModal, voter, refreshVoters }) => {
                     placeholder="CNP"
                     value={cnp}
                     onChange={(e) => setCnp(e.target.value)}
-                  />
-                </label>
-              </div>
-              <div className="mt-4">
-                <label className="block">
-                  <span className="text-gray-700">Password</span>
-                  <input
-                    type="password"
-                    className="form-input mt-1 block w-full"
-                    placeholder="Password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
                   />
                 </label>
               </div>

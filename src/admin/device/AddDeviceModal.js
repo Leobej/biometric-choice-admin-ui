@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import axios from "axios";
-const AddDeviceModal = ({ isOpen, closeModal, refreshDevices }) => {
+const AddDeviceModal = ({ isOpen, closeModal, refreshDevices, showNotification  }) => {
   const [name, setName] = useState("");
   const [type, setType] = useState("");
   const [status, setStatus] = useState("");
@@ -24,7 +24,7 @@ const AddDeviceModal = ({ isOpen, closeModal, refreshDevices }) => {
       );
 
       if (response.status === 200 || response.status === 201) {
-        alert("Device added successfully");
+        showNotification("Device added successfully", "success");
         refreshDevices();
         closeModal();
       } else {
@@ -32,7 +32,8 @@ const AddDeviceModal = ({ isOpen, closeModal, refreshDevices }) => {
       }
     } catch (error) {
       console.error("Error adding device:", error);
-      alert("Error adding device. Please try again.");
+      showNotification("Error adding device. Please try again.", "error");
+  
     }
   };
 

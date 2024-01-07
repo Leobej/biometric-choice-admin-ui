@@ -1,12 +1,11 @@
 import React, { useState } from "react";
 import axios from "axios";
 
-const AddVoterModal = ({ isOpen, closeModal }) => {
+const AddVoterModal = ({ isOpen, closeModal, showNotification }) => {
   const [cnp, setCnp] = useState("");
   const [fingerprintId, setFingerprintId] = useState("");
   const [firstname, setFirstname] = useState("");
   const [lastname, setLastname] = useState("");
-  const [password, setPassword] = useState("");
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -15,26 +14,29 @@ const AddVoterModal = ({ isOpen, closeModal }) => {
       firstname,
       lastname,
       cnp,
-      password,
       fingerprintId, // Assuming fingerprintId is a string. If it's a number, convert it before sending.
     };
 
     try {
       const token = localStorage.getItem("token");
-      const response = await axios.post("http://localhost:8080/voters/register", voterData, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await axios.post(
+        "http://localhost:8080/voters/register",
+        voterData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
       if (response.status === 201 || response.status === 200) {
-        alert("Voter added successfully!");
+        showNotification("Voter added successfully!", "success"); // Use showNotification here
         resetForm();
         closeModal();
       }
     } catch (error) {
       console.error("Error adding voter:", error);
-      alert("Error adding voter. Please try again.");
+      showNotification("Error adding voter. Please try again.", "error"); // Use showNotification here
     }
   };
 
@@ -43,13 +45,11 @@ const AddVoterModal = ({ isOpen, closeModal }) => {
     setFingerprintId("");
     setFirstname("");
     setLastname("");
-    setPassword("");
   };
 
   if (!isOpen) {
     return null;
   }
-  
 
   return (
     <div className="fixed z-10 inset-0 overflow-y-auto">
@@ -80,7 +80,7 @@ const AddVoterModal = ({ isOpen, closeModal }) => {
                   className="form-input mt-1 block w-full"
                 />
               </div>
-            
+
               <div className="mt-4">
                 <label htmlFor="fingerprintId" className="block text-gray-700">
                   Fingerprint ID:
@@ -89,7 +89,7 @@ const AddVoterModal = ({ isOpen, closeModal }) => {
                   type="text"
                   id="fingerprintId"
                   name="fingerprintId"
-                  value={fingerprintId || ''}
+                  value={fingerprintId || ""}
                   onChange={(event) => setFingerprintId(event.target.value)}
                   className="form-input mt-1 block w-full"
                 />
@@ -118,20 +118,6 @@ const AddVoterModal = ({ isOpen, closeModal }) => {
                   name="lastname"
                   value={lastname}
                   onChange={(event) => setLastname(event.target.value)}
-                  required
-                  className="form-input mt-1 block w-full"
-                />
-              </div>
-              <div className="mt-4">
-                <label htmlFor="password" className="block text-gray-700">
-                  Password:
-                </label>
-                <input
-                  type="password"
-                  id="password"
-                  name="password"
-                  value={password}
-                  onChange={(event) => setPassword(event.target.value)}
                   required
                   className="form-input mt-1 block w-full"
                 />

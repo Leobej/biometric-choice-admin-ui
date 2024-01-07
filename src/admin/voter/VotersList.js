@@ -6,6 +6,8 @@ import GenericTable from "../genericlistcomponents/GenericTable";
 import GenericModal from "../genericlistcomponents/GenericModal";
 import ActionBar from "../genericlistcomponents/ActionBar";
 import AddVoterModal from "./AddVoterModal";
+import NotificationBanner from "../genericlistcomponents/NotificationBanner";
+
 const VotersList = () => {
   const [voters, setVoters] = useState([]);
   const [totalPages, setTotalPages] = useState(0);
@@ -14,6 +16,17 @@ const VotersList = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalType, setModalType] = useState(null); // 'add', 'edit', or 'delete'
   const [searchQuery, setSearchQuery] = useState("");
+  const [notification, setNotification] = useState({
+    show: false,
+    message: "",
+    type: "",
+  });
+
+  // Function to show notification
+  const showNotification = (message, type) => {
+    setNotification({ show: true, message, type });
+    setTimeout(() => setNotification({ ...notification, show: false }), 5000);
+  };
 
   const onAddClick = () => {
     setModalType("add");
@@ -145,6 +158,13 @@ const VotersList = () => {
 
   return (
     <div className="flex flex-col justify-start items-center min-h-screen">
+      {notification.show && (
+        <NotificationBanner
+          message={notification.message}
+          type={notification.type}
+          onClose={() => setNotification({ ...notification, show: false })}
+        />
+      )}
       <div className="py-4 flex items-center">
         <div className="relative flex items-center">
           <input
@@ -187,16 +207,17 @@ const VotersList = () => {
       {isModalOpen &&
         (modalType === "edit" ? (
           <EditVoterModal
-            isOpen={isModalOpen}
-            closeModal={handleModalClose}
-            voter={selectedVoter}
-            saveVoter={handleSave}
-            refreshVoters={fetchVoters} 
-          />
+          isOpen={isModalOpen}
+          closeModal={handleModalClose}
+          voter={selectedVoter}
+          refreshVoters={fetchVoters}
+          showNotification={showNotification} // Pass showNotification as a prop
+        />
         ) : modalType === "add" ? ( // Check if modalType is 'add'
-          <AddVoterModal // Render the AddVoterModal when modalType is 'add'
+          <AddVoterModal
             isOpen={isModalOpen}
             closeModal={handleModalClose}
+            showNotification={showNotification} // Pass showNotification as a prop
           />
         ) : (
           <GenericModal
@@ -214,7 +235,9 @@ const VotersList = () => {
       <PageNavigation
         totalPages={totalPages}
         currentPage={currentPage}
-        handlePageNavigation={(newPage) => fetchVoters(newPage, 10)}
+        handlePageNavigation={(newPage) =>
+          fetchVoters(newPage, 10, searchQuery)
+        }
       />
     </div>
   );

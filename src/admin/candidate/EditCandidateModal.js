@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from "react";
+import axios from "axios";
 
 const EditCandidateModal = ({
   isOpen,
   closeModal,
   candidate,
-  saveCandidate,
+  fetchCandidates,
+  showNotification,
 }) => {
-  // Local state to track the form field values
+  const [currentPage, setCurrentPage] = useState(0);
+  const [searchQuery, setSearchQuery] = useState("");
   const [firstname, setFirstName] = useState(
     candidate ? candidate.firstname : ""
   );
@@ -14,6 +17,34 @@ const EditCandidateModal = ({
   const [party, setParty] = useState(candidate ? candidate.party : "");
   const [position, setPosition] = useState(candidate ? candidate.position : "");
   const [image, setImage] = useState(candidate ? candidate.image : "");
+
+  const saveCandidate = async (candidate) => {
+    try {
+      const token = localStorage.getItem("token");
+      const config = {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      };
+
+      let response = await axios.put(
+        `http://localhost:8080/candidates/${candidate.candidateId}`,
+        candidate,
+        config
+      );
+
+      if (response.status === 200 || response.status === 201) {
+        showNotification("Candidate saved successfully!", "success");
+        fetchCandidates(currentPage, 10, searchQuery);
+        closeModal();
+      } else {
+        showNotification("Failed to save candidate.", "error");
+      }
+    } catch (error) {
+      console.error("Error saving candidate:", error);
+      showNotification("Error saving candidate. Please try again.", "error");
+    }
+  };
 
   useEffect(() => {
     if (candidate) {
@@ -109,16 +140,15 @@ const EditCandidateModal = ({
               </div>
             </div>
             <div className="mt-4">
-                <label className="block">
-                  <span className="text-gray-700">Candidate Image</span>
-                  <input
-                    type="file"
-                    className="form-input mt-1 block w-full"
-                    onChange={(event) => setImage(event.target.files[0])}
-                  />
-                </label>
-              </div>
-
+              <label className="block">
+                <span className="text-gray-700">Candidate Image</span>
+                <input
+                  type="file"
+                  className="form-input mt-1 block w-full"
+                  onChange={(event) => setImage(event.target.files[0])}
+                />
+              </label>
+            </div>
 
             <div className="px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
               <span className="flex w-full rounded-md shadow-sm sm:ml-3 sm:w-auto">

@@ -7,7 +7,7 @@ import PageNavigation from "../genericlistcomponents/PageNavigation";
 import ActionBar from "../genericlistcomponents/ActionBar";
 import EditLocationModal from "./EditLocationModal";
 import AddLocationModal from "./AddLocationModal";
-
+import NotificationBanner from "../genericlistcomponents/NotificationBanner";
 const LocationsList = () => {
   const [locations, setLocations] = useState([]);
   const [totalPages, setTotalPages] = useState(0);
@@ -16,10 +16,15 @@ const LocationsList = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalType, setModalType] = useState(null); // 'add', 'edit', or 'delete'
   const [searchQuery, setSearchQuery] = useState("");
+  const [notification, setNotification] = useState({
+    show: false,
+    message: "",
+    type: "",
+  });
 
-  const onAddClick = () => {
-    setModalType("add");
-    setIsModalOpen(true);
+  const showNotification = (message, type) => {
+    setNotification({ show: true, message, type });
+    setTimeout(() => setNotification({ ...notification, show: false }), 5000);
   };
 
   const onRowClick = (item) => {
@@ -27,12 +32,16 @@ const LocationsList = () => {
     setSelectedLocation(item);
   };
 
+  const onAddClick = () => {
+    setModalType("add");
+    setIsModalOpen(true);
+  };
+
   const onEditClick = () => {
+    // Existing code...
     if (selectedLocation) {
       setModalType("edit");
       setIsModalOpen(true);
-    } else {
-      alert("Please select a location to edit.");
     }
   };
 
@@ -113,6 +122,13 @@ const LocationsList = () => {
 
   return (
     <div className="flex flex-col justify-start items-center min-h-screen">
+      {notification.show && (
+        <NotificationBanner
+          message={notification.message}
+          type={notification.type}
+          onClose={() => setNotification({ ...notification, show: false })}
+        />
+      )}
       <div className="py-4 flex items-center">
         <div className="relative flex items-center">
           <input
@@ -158,6 +174,7 @@ const LocationsList = () => {
           isOpen={isModalOpen}
           closeModal={handleModalClose}
           refreshLocations={fetchLocations}
+          showNotification={showNotification}
         />
       )}
       {isModalOpen && modalType === "edit" && (
@@ -167,6 +184,7 @@ const LocationsList = () => {
           location={selectedLocation}
           saveLocation={handleSave}
           refreshLocations={fetchLocations}
+          showNotification={showNotification}
         />
       )}
       {isModalOpen && modalType !== "add" && modalType !== "edit" && (
@@ -197,7 +215,9 @@ const LocationsList = () => {
       <PageNavigation
         totalPages={totalPages}
         currentPage={currentPage}
-        handlePageNavigation={(newPage) => fetchLocations(newPage, 10)}
+        handlePageNavigation={(newPage) =>
+          fetchLocations(newPage, 10, searchQuery)
+        }
       />
     </div>
   );

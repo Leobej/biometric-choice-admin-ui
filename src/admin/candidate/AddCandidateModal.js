@@ -1,8 +1,14 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router";
+import NotificationBanner from "../genericlistcomponents/NotificationBanner";
 
-const AddCandidateModal = ({ isOpen, closeModal }) => {
+const AddCandidateModal = ({
+  isOpen,
+  closeModal,
+  fetchCandidates,
+  showNotification,
+}) => {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [party, setParty] = useState("");
@@ -26,8 +32,6 @@ const AddCandidateModal = ({ isOpen, closeModal }) => {
     setImage("");
   };
 
-  
-
   const handleSubmit = async (event) => {
     event.preventDefault();
 
@@ -37,28 +41,33 @@ const AddCandidateModal = ({ isOpen, closeModal }) => {
     formData.append("party", party);
     formData.append("position", position);
     if (image) {
-        formData.append("image", image);
+      formData.append("image", image);
     }
 
     try {
-        const token = localStorage.getItem("token");
-        const response = await axios.post("http://localhost:8080/candidates", formData, {
-            headers: {
-                "Content-Type": "multipart/form-data",
-                Authorization: `Bearer ${token}`,
-            },
-        });
-
-        if (response.status === 201 || response.status === 200) {
-            alert("Candidate created successfully!");
-            resetForm();
-            closeModal();
+      const token = localStorage.getItem("token");
+      const response = await axios.post(
+        "http://localhost:8080/candidates",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+            Authorization: `Bearer ${token}`,
+          },
         }
+      );
+
+      if (response.status === 201 || response.status === 200) {
+        showNotification("Candidate created successfully!", "success");
+        resetForm();
+        closeModal();
+        fetchCandidates(); // Refresh the candidates list
+      }
     } catch (error) {
-        console.error("Error creating candidate:", error);
-        alert("Error creating candidate. Please try again.");
+      console.error("Error creating candidate:", error);
+      showNotification("Error creating candidate. Please try again.", "error");
     }
-};
+  };
 
   if (!isOpen) {
     return null;
@@ -79,8 +88,6 @@ const AddCandidateModal = ({ isOpen, closeModal }) => {
         >
           <form onSubmit={handleSubmit}>
             <div className="px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-              {/* Form fields */}
-              {/* ... rest of your form fields go here ... */}
               <div>
                 <label className="block">
                   <span className="text-gray-700">First Name</span>
@@ -156,7 +163,7 @@ const AddCandidateModal = ({ isOpen, closeModal }) => {
                   className="inline-flex justify-center w-full rounded-md border border-gray-300 px-4 py-2 bg-white text-base leading-6 font-medium text-gray-700 shadow-sm hover:text-gray-500 focus:outline-none focus:border-blue-300 focus:shadow-outline-blue transition ease-in-out duration-150 sm:text-sm"
                 >
                   Cancel
-                  </button>
+                </button>
               </span>
             </div>
           </form>

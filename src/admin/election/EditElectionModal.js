@@ -1,23 +1,46 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { useEffect, useState } from "react";
 
-const EditElectionModal = ({ isOpen, closeModal, election, saveElection }) => {
-  const [name, setName] = useState(election.name);
-  const [description, setDescription] = useState(election.description);
-  const [startDate, setStartDate] = useState(election.startDate);
-  const [endDate, setEndDate] = useState(election.endDate);
+const EditElectionModal = ({
+  isOpen,
+  closeModal,
+  election,
+  showNotification,
+  fetchElections,
+}) => {
+  const [description, setDescription] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
   const [candidates, setCandidates] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCandidate, setSelectedCandidate] = useState(null);
+  // const [selectedCandidate, setSelectedCandidate] = useState(null);
+  const [selectedCandidates, setSelectedCandidates] = useState(
+    election.candidates || []
+  );
+
+  console.log(election);
 
   useEffect(() => {
-    setName(election.name);
     setDescription(election.description);
-    setStartDate(election.startDate);
-    setEndDate(election.endDate);
+    setStartDate(
+      election.startDate
+        ? new Date(election.startDate).toISOString().slice(0, 16)
+        : ""
+    );
+    setEndDate(
+      election.endDate
+        ? new Date(election.endDate).toISOString().slice(0, 16)
+        : ""
+    );
+    if (election && election.candidates) {
+      setSelectedCandidates(election.candidates);
+    } else {
+      setSelectedCandidates([]);
+    }
+    console.log("Select candidates:", selectedCandidates);
   }, [election]);
 
+  // Fetch candidates excluding already selected ones
   useEffect(() => {
     const fetchCandidates = async () => {
       const token = localStorage.getItem("token");
@@ -30,41 +53,62 @@ const EditElectionModal = ({ isOpen, closeModal, election, saveElection }) => {
           },
         }
       );
-
-      if (response.data.length > 0) {
-        setCandidates(response.data);
-      } else {
-        setCandidates([]);
-      }
+      const newCandidates = response.data.filter(
+        (candidate) =>
+          !selectedCandidates.some(
+            (selected) => selected.candidateId === candidate.candidateId
+          )
+      );
+      setCandidates(newCandidates.length > 0 ? newCandidates : []);
     };
-
-    const timer = setTimeout(() => {
-      fetchCandidates();
-    }, 300);
-
+    const timer = setTimeout(() => fetchCandidates(), 300);
     return () => clearTimeout(timer);
-  }, [searchQuery]);
+  }, [searchQuery, selectedCandidates]);
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
 
-    // Save the updated election details
-    saveElection({
-      ...election,
-      name,
+    const updatedElection = {
+      electionId: election.electionId,
       description,
       startDate,
       endDate,
-      candidate: selectedCandidate,
-    });
+      candidates: selectedCandidates,
+      location: election.location,
+    };
 
-    // Close the modal
-    closeModal();
+    try {
+      const token = localStorage.getItem("token");
+      await axios.put(`http://localhost:8080/elections`, updatedElection, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      showNotification("Election updated successfully", "success");
+      fetchElections();
+      closeModal();
+    } catch (error) {
+      console.error("Error updating election:", error);
+      showNotification("Failed to update election", "error");
+    }
   };
 
   const handleCandidateClick = (candidate) => {
-    setSearchQuery(`${candidate.firstname} ${candidate.lastname}`);
-    setSelectedCandidate(candidate);
+    const isAlreadySelected = selectedCandidates.some(
+      (c) => c.candidateId === candidate.candidateId
+    );
+
+    setSelectedCandidates(
+      isAlreadySelected
+        ? selectedCandidates.filter(
+            (c) => c.candidateId !== candidate.candidateId
+          )
+        : [...selectedCandidates, candidate]
+    );
+
+    setSearchQuery("");
     setCandidates([]);
   };
 
@@ -74,11 +118,9 @@ const EditElectionModal = ({ isOpen, closeModal, election, saveElection }) => {
 
   return (
     <div className="fixed z-10 inset-0 overflow-y-auto">
+      {/* Modal content */}
       <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-        <div className="fixed inset-0 transition-opacity">
-          <div className="absolute inset-0 bg-gray-500 opacity-75"></div>
-        </div>
-
+        {/* More modal content */}
         <div
           className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full"
           role="dialog"
@@ -86,22 +128,11 @@ const EditElectionModal = ({ isOpen, closeModal, election, saveElection }) => {
           aria-labelledby="modal-headline"
         >
           <form onSubmit={handleSubmit}>
+            {/* Form content */}
             <div className="px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+              {/* Description, Candidate, and Dates inputs */}
               <div className="mt-4">
-                <label htmlFor="name" className="block text-gray-700">
-                  Election Name:
-                </label>
-                <input
-                  type="text"
-                  id="name"
-                  name="name"
-                  value={name}
-                  onChange={(event) => setName(event.target.value)}
-                  required
-                  className="form-input mt-1 block w-full"
-                />
-              </div>
-              <div className="mt-4">
+                {/* Description input */}
                 <label htmlFor="description" className="block text-gray-700">
                   Description:
                 </label>
@@ -115,6 +146,30 @@ const EditElectionModal = ({ isOpen, closeModal, election, saveElection }) => {
                 />
               </div>
               <div className="mt-4">
+                <label className="block text-gray-700">
+                  Selected Candidates:
+                </label>
+                <div className="flex flex-wrap">
+                  {selectedCandidates.map((candidate) => (
+                    <span
+                      key={candidate.candidateId}
+                      className="m-1 p-1 bg-blue-200 rounded"
+                    >
+                      {candidate.firstname} {candidate.lastname}
+                      <button
+                        type="button"
+                        onClick={() => handleCandidateClick(candidate)}
+                        className="ml-2 text-red-500"
+                      >
+                        ×
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              <div className="mt-4">
+                {/* Candidate input */}
                 <label htmlFor="candidate" className="block text-gray-700">
                   Candidate:
                 </label>
@@ -124,11 +179,10 @@ const EditElectionModal = ({ isOpen, closeModal, election, saveElection }) => {
                   name="candidate"
                   value={searchQuery}
                   onChange={(event) => setSearchQuery(event.target.value)}
-                  required
+                  required={selectedCandidates.length === 0}
                   className="form-input mt-1 block w-full"
                   placeholder="Search for a candidate"
                 />
-
                 <ul
                   className="candidate-list mt-2 overflow-y-auto"
                   style={{ maxHeight: "150px" }}
@@ -144,13 +198,13 @@ const EditElectionModal = ({ isOpen, closeModal, election, saveElection }) => {
                   ))}
                 </ul>
               </div>
-
               <div className="mt-4">
+                {/* Start Date input */}
                 <label htmlFor="startDate" className="block text-gray-700">
                   Start Date:
                 </label>
                 <input
-                  type="date"
+                  type="datetime-local"
                   id="startDate"
                   name="startDate"
                   value={startDate}
@@ -160,11 +214,12 @@ const EditElectionModal = ({ isOpen, closeModal, election, saveElection }) => {
                 />
               </div>
               <div className="mt-4">
+                {/* End Date input */}
                 <label htmlFor="endDate" className="block text-gray-700">
                   End Date:
                 </label>
                 <input
-                  type="date"
+                  type="datetime-local"
                   id="endDate"
                   name="endDate"
                   value={endDate}
@@ -174,6 +229,7 @@ const EditElectionModal = ({ isOpen, closeModal, election, saveElection }) => {
                 />
               </div>
 
+              {/* Submit and Cancel buttons */}
               <div className="px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
                 <span className="flex w-full rounded-md shadow-sm sm:ml-3 sm:w-auto">
                   <button

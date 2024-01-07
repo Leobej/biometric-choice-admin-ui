@@ -7,6 +7,7 @@ import PageNavigation from "../genericlistcomponents/PageNavigation";
 import ActionBar from "../genericlistcomponents/ActionBar";
 import EditDeviceModal from "./EditDeviceModal";
 import AddDeviceModal from "./AddDeviceModal";
+import NotificationBanner from "../genericlistcomponents/NotificationBanner";
 
 const DevicesList = () => {
   const [devices, setDevices] = useState([]);
@@ -16,6 +17,18 @@ const DevicesList = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalType, setModalType] = useState(null); // 'add', 'edit', or 'delete'
   const [searchQuery, setSearchQuery] = useState("");
+  const [notification, setNotification] = useState({ show: false, message: '', type: '' });
+
+  // Function to show notification
+  const showNotification = (message, type) => {
+    setNotification({ show: true, message, type });
+    setTimeout(() => setNotification({ ...notification, show: false }), 5000);
+  };
+
+  // Function to close notification manually
+  const closeNotification = () => {
+    setNotification({ ...notification, show: false });
+  };
 
   const onAddClick = () => {
     setModalType("add");
@@ -73,13 +86,15 @@ const DevicesList = () => {
         setDevices(response.data.content);
         setTotalPages(response.data.totalPages);
         setCurrentPage(page);
+        showNotification('Devices fetched successfully', 'success'); // Display success notification
+        
       } else {
         setDevices([]);
       }
     } catch (error) {
       console.error("Error fetching devices:", error);
-      // Handle error
-    }
+      showNotification('Error fetching devices', 'error'); // Display error notification
+      }
   };
 
   const handleModalClose = () => {
@@ -140,6 +155,13 @@ const DevicesList = () => {
 
   return (
     <div className="flex flex-col justify-start items-center min-h-screen">
+         {notification.show && (
+        <NotificationBanner
+          message={notification.message}
+          type={notification.type}
+          onClose={closeNotification}
+        />
+      )}
       <div className="py-4 flex items-center">
         <div className="relative flex items-center">
           <input
@@ -183,7 +205,7 @@ const DevicesList = () => {
         <AddDeviceModal
           isOpen={isModalOpen}
           closeModal={handleModalClose}
-          saveDevice={handleSave}
+          showNotification={showNotification} 
           refreshDevices={fetchDevices}
         />
       )}
@@ -193,7 +215,7 @@ const DevicesList = () => {
           isOpen={isModalOpen}
           closeModal={handleModalClose}
           device={selectedDevice}
-          saveDevice={handleSave}
+          showNotification={showNotification} 
           refreshDevices={fetchDevices}
         />
       )}
@@ -212,7 +234,7 @@ const DevicesList = () => {
       <PageNavigation
         totalPages={totalPages}
         currentPage={currentPage}
-        handlePageNavigation={(newPage) => fetchDevices(newPage, 10)}
+        handlePageNavigation={(newPage) => fetchDevices(newPage, 10, searchQuery)}
       />
     </div>
   );

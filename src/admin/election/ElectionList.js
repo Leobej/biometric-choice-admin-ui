@@ -4,7 +4,7 @@ import GenericTable from "../genericlistcomponents/GenericTable";
 import GenericModal from "../genericlistcomponents/GenericModal";
 import GenericForm from "../genericlistcomponents/GenericForm";
 import PageNavigation from "../genericlistcomponents/PageNavigation";
-
+import NotificationBanner from "../genericlistcomponents/NotificationBanner";
 import ActionBar from "../genericlistcomponents/ActionBar";
 import EditElectionModal from "./EditElectionModal";
 import AddElectionModal from "./AddElectionModal";
@@ -18,6 +18,12 @@ const ElectionsList = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalType, setModalType] = useState(null); // 'add', 'edit', or 'delete'
   const [searchQuery, setSearchQuery] = useState("");
+  const [notification, setNotification] = useState({
+    show: false,
+    message: "",
+    type: "",
+  });
+
   const navigate = useNavigate();
   const onAddClick = () => {
     setModalType("add");
@@ -26,6 +32,11 @@ const ElectionsList = () => {
 
   const onRowClick = (item) => {
     setSelectedElection(item);
+  };
+
+  const showNotification = (message, type) => {
+    setNotification({ show: true, message, type });
+    setTimeout(() => setNotification({ ...notification, show: false }), 5000);
   };
 
   const onEditClick = () => {
@@ -56,8 +67,8 @@ const ElectionsList = () => {
     { label: "Created at", key: "createdAt" },
     { label: "Location", key: "location" },
     {
-      label: 'Actions',
-      key: 'actions',
+      label: "Actions",
+      key: "actions",
       render: (election) => (
         <button
           onClick={() => navigate(`/elections/${election.electionId}/details`)}
@@ -130,6 +141,13 @@ const ElectionsList = () => {
 
   return (
     <div className="flex flex-col justify-start items-center min-h-screen">
+      {notification.show && (
+        <NotificationBanner
+          message={notification.message}
+          type={notification.type}
+          onClose={() => setNotification({ ...notification, show: false })}
+        />
+      )}
       <div className="py-4 flex items-center">
         <div className="relative flex items-center">
           <input
@@ -171,14 +189,19 @@ const ElectionsList = () => {
       />
 
       {isModalOpen && modalType === "add" && (
-        <AddElectionModal isOpen={isModalOpen} closeModal={handleModalClose} />
+        <AddElectionModal
+          isOpen={isModalOpen}
+          closeModal={handleModalClose}
+          showNotification={showNotification}
+        />
       )}
-      {isModalOpen && modalType === "edit" && (
+       {isModalOpen && modalType === "edit" && (
         <EditElectionModal
           isOpen={isModalOpen}
           closeModal={handleModalClose}
           election={selectedElection}
-          saveElection={handleSave}
+          showNotification={showNotification}
+          fetchElections={fetchElections}
         />
       )}
       {isModalOpen && modalType !== "add" && modalType !== "edit" && (
@@ -209,7 +232,9 @@ const ElectionsList = () => {
       <PageNavigation
         totalPages={totalPages}
         currentPage={currentPage}
-        handlePageNavigation={(newPage) => fetchElections(newPage, 10)}
+        handlePageNavigation={(newPage) =>
+          fetchElections(newPage, 10, searchQuery)
+        }
       />
     </div>
   );
