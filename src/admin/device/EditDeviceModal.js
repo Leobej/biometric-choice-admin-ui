@@ -88,25 +88,32 @@ const EditDeviceModal = ({
               <div className="mt-4">
                 <label className="block">
                   <span className="text-gray-700">Device Type</span>
-                  <input
-                    type="text"
-                    className="form-input mt-1 block w-full"
-                    placeholder="Device Type"
+                  <select
+                    className="form-select mt-1 block w-full"
                     value={type}
                     onChange={(e) => setType(e.target.value)}
-                  />
+                  >
+                    <option value="Fingerprint Registration">
+                      Fingerprint Registration
+                    </option>
+                    <option value="Fingerprint Verification">
+                      Fingerprint Verification
+                    </option>
+                    <option value="Voting Device">Voting Device</option>
+                  </select>
                 </label>
               </div>
               <div className="mt-4">
                 <label className="block">
                   <span className="text-gray-700">Device Status</span>
-                  <input
-                    type="text"
-                    className="form-input mt-1 block w-full"
-                    placeholder="Device Status"
+                  <select
+                    className="form-select mt-1 block w-full"
                     value={status}
                     onChange={(e) => setStatus(e.target.value)}
-                  />
+                  >
+                    <option value="Active">Active</option>
+                    <option value="Inactive">Inactive</option>
+                  </select>
                 </label>
               </div>
             </div>

@@ -24,6 +24,8 @@ const ElectionDetails = () => {
   const [votesByCandidate, setVotesByCandidate] = useState({});
   const [totalVotes, setTotalVotes] = useState(0);
   const [selectedCandidateId, setSelectedCandidateId] = useState("");
+  const [selectedDevices, setSelectedDevices] = useState([]);
+  const [allDevices, setAllDevices] = useState([]);
 
   const fetchVotingTrends = (candidateId) => {
     const token = localStorage.getItem("token");
@@ -47,9 +49,23 @@ const ElectionDetails = () => {
     setSelectedCandidateId(candidateId);
     fetchVotingTrends(candidateId);
   };
+  
+  const handleDeviceSelectionChange = (device) => {
+    // Update selected devices
+    setSelectedDevices((prevSelected) => {
+      if (prevSelected.includes(device.id)) {
+        return prevSelected.filter((d) => d !== device.id);
+      } else {
+        return [...prevSelected, device.id];
+      }
+    });
+  };
 
   useEffect(() => {
-    const newTotalVotes = Object.values(votesByCandidate).reduce((acc, current) => acc + current, 0);
+    const newTotalVotes = Object.values(votesByCandidate).reduce(
+      (acc, current) => acc + current,
+      0
+    );
     setTotalVotes(newTotalVotes);
   }, [votesByCandidate]);
 
@@ -100,28 +116,55 @@ const ElectionDetails = () => {
       .catch((error) => console.error(error));
   }, [id]);
 
+  useEffect(() => {
+    // Fetch all devices
+    const fetchDevices = async () => {
+      const token = localStorage.getItem("token");
+      try {
+        const response = await axios.get(`http://localhost:8080/devices`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setAllDevices(response.data);
+      } catch (error) {
+        console.error("Error fetching devices:", error);
+      }
+    };
+    fetchDevices();
+  }, []);
+
   if (!electionData) {
     return <div>Loading...</div>;
   }
 
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold text-center mb-6">Election Details for ID: {id}</h1>
+      <h1 className="text-2xl font-bold text-center mb-6">
+        Election Details for ID: {id}
+      </h1>
       <div className="mb-4">
-        <p className="text-lg"><strong>Description:</strong> {electionData.description}</p>
-        <p className="text-lg mb-6"><strong>Active:</strong> {electionData.active ? "Yes" : "No"}</p>
+        <p className="text-lg">
+          <strong>Description:</strong> {electionData.description}
+        </p>
+        <p className="text-lg mb-6">
+          <strong>Active:</strong> {electionData.active ? "Yes" : "No"}
+        </p>
       </div>
 
       <div className="mb-8">
         <h2 className="text-xl font-bold mb-3">Total Votes: {totalVotes}</h2>
         <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {electionData.candidates.map((candidate, index) => (
-            <div key={index} className="bg-white shadow-md rounded-lg p-6 text-center">
+            <div
+              key={index}
+              className="bg-white shadow-md rounded-lg p-6 text-center"
+            >
               <h4 className="font-bold text-lg mb-2">
                 {candidate.firstname} {candidate.lastname}
               </h4>
               <p className="text-md mb-2">Party: {candidate.party}</p>
-              <p className="text-md font-semibold">Votes: {votesByCandidate[candidate.candidateId] || 0}</p>
+              <p className="text-md font-semibold">
+                Votes: {votesByCandidate[candidate.candidateId] || 0}
+              </p>
             </div>
           ))}
         </div>

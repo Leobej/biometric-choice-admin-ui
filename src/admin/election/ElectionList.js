@@ -193,6 +193,7 @@ const ElectionsList = () => {
           isOpen={isModalOpen}
           closeModal={handleModalClose}
           showNotification={showNotification}
+          fetchElections={fetchElections}
         />
       )}
        {isModalOpen && modalType === "edit" && (
