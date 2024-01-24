@@ -63,7 +63,7 @@ const handleSubmit = async (event) => {
     const userRole = localStorage.getItem("userRole");
     console.log(userRole);
     if (userRole === 'ADMIN') {
-      navigate("/admin");
+      navigate("/elections");
     } else if (userRole === 'USER') {
       navigate("/registration");
     } else {

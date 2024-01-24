@@ -82,6 +82,13 @@ module.exports = function (app) {
     })
   );
   app.use(
+    "/voters/register",
+    createProxyMiddleware({
+      target: "http://localhost:8080",
+      changeOrigin: true,
+    })
+  );
+  app.use(
     "/voters-history",
     createProxyMiddleware({
       target: "http://localhost:8080",

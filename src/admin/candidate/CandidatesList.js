@@ -116,42 +116,22 @@ const CandidatesList = () => {
   };
 
   const footerMap = {
-    add: (
-      <>
-        <button type="submit" form="generic-form" /* ...other attributes */>
-          Save
-        </button>
-        <button
-          type="button"
-          onClick={handleModalClose} /* ...other attributes */
-        >
-          Cancel
-        </button>
-      </>
-    ),
-    edit: (
-      <>
-        <button type="submit" form="generic-form" /* ...other attributes */>
-          Save
-        </button>
-        <button
-          type="button"
-          onClick={handleModalClose} /* ...other attributes */
-        >
-          Cancel
-        </button>
-      </>
-    ),
     delete: (
       <>
         <button
           type="button"
+          class="focus:outline-none text-white bg-red-700 hover:bg-red-800 
+          focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5
+           py-2.5 me-2 mb-2 dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-900"
           onClick={handleDeleteConfirm} /* ...other attributes */
         >
           Delete
         </button>
         <button
           type="button"
+          class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300
+           font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700
+            focus:outline-none dark:focus:ring-blue-800"
           onClick={handleModalClose} /* ...other attributes */
         >
           Cancel
@@ -215,7 +195,7 @@ const CandidatesList = () => {
             closeModal={handleModalClose}
             candidate={selectedCandidate}
             fetchCandidates={fetchCandidates}
-            showNotification={showNotification} 
+            showNotification={showNotification}
           />
         ) : modalType === "add" ? (
           <AddCandidateModal
@@ -228,23 +208,9 @@ const CandidatesList = () => {
           <GenericModal
             isOpen={isModalOpen}
             closeModal={handleModalClose}
-            title={`${
-              modalType.charAt(0).toUpperCase() + modalType.slice(1)
-            } Candidate`}
             footer={footerMap[modalType]}
           >
-            {modalType === "delete" ? (
-              <p>Are you sure you want to delete this candidate?</p>
-            ) : (
-              <GenericForm
-                initialValues={modalType === "edit" ? selectedCandidate : {}}
-                fields={fields.map((field) => ({
-                  ...field,
-                  type: field.type || "text",
-                }))}
-                id="generic-form"
-              />
-            )}
+            <div>Are you sure you want to delete this candidate?</div>
           </GenericModal>
         ))}
       <PageNavigation

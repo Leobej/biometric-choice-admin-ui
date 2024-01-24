@@ -110,10 +110,22 @@ const LocationsList = () => {
   const footerMap = {
     delete: (
       <>
-        <button type="button" onClick={handleDeleteConfirm}>
+        <button
+          type="button"
+          class="focus:outline-none text-white bg-red-700 hover:bg-red-800 
+          focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5
+           py-2.5 me-2 mb-2 dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-900"
+          onClick={handleDeleteConfirm}
+        >
           Delete
         </button>
-        <button type="button" onClick={handleModalClose}>
+        <button
+          type="button"
+          class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300
+       font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700
+        focus:outline-none dark:focus:ring-blue-800"
+          onClick={handleModalClose}
+        >
           Cancel
         </button>
       </>
@@ -133,7 +145,7 @@ const LocationsList = () => {
         <div className="relative flex items-center">
           <input
             type="text"
-            placeholder="Search by name..."
+            placeholder="Search..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="rounded-l border px-2 py-1"
@@ -187,28 +199,14 @@ const LocationsList = () => {
           showNotification={showNotification}
         />
       )}
-      {isModalOpen && modalType !== "add" && modalType !== "edit" && (
+      {isModalOpen && modalType === "delete" && (
         <GenericModal
           isOpen={isModalOpen}
           closeModal={handleModalClose}
-          title={`${
-            modalType.charAt(0).toUpperCase() + modalType.slice(1)
-          } Location`}
           footer={footerMap[modalType]}
         >
-          {modalType === "delete" ? (
-            <p>Are you sure you want to delete this location?</p>
-          ) : (
-            <GenericForm
-              initialValues={modalType === "edit" ? selectedLocation : {}}
-              onSubmit={handleSave}
-              fields={fields.map((field) => ({
-                ...field,
-                type: field.type || "text",
-              }))}
-              id="generic-form"
-            />
-          )}
+          <h1 className="text-2xl font-bold">Delete Location</h1>
+          <p>Are you sure you want to delete this location?</p>
         </GenericModal>
       )}
 

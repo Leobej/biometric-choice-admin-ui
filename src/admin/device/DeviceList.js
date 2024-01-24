@@ -17,7 +17,11 @@ const DevicesList = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalType, setModalType] = useState(null); // 'add', 'edit', or 'delete'
   const [searchQuery, setSearchQuery] = useState("");
-  const [notification, setNotification] = useState({ show: false, message: '', type: '' });
+  const [notification, setNotification] = useState({
+    show: false,
+    message: "",
+    type: "",
+  });
 
   // Function to show notification
   const showNotification = (message, type) => {
@@ -86,15 +90,14 @@ const DevicesList = () => {
         setDevices(response.data.content);
         setTotalPages(response.data.totalPages);
         setCurrentPage(page);
-        showNotification('Devices fetched successfully', 'success'); // Display success notification
-        
+        showNotification("Devices fetched successfully", "success"); // Display success notification
       } else {
         setDevices([]);
       }
     } catch (error) {
       console.error("Error fetching devices:", error);
-      showNotification('Error fetching devices', 'error'); // Display error notification
-      }
+      showNotification("Error fetching devices", "error"); // Display error notification
+    }
   };
 
   const handleModalClose = () => {
@@ -121,32 +124,24 @@ const DevicesList = () => {
   };
 
   const footerMap = {
-    add: (
-      <>
-        <button type="submit" form="generic-form">
-          Save
-        </button>
-        <button type="button" onClick={handleModalClose}>
-          Cancel
-        </button>
-      </>
-    ),
-    edit: (
-      <>
-        <button type="submit" form="generic-form">
-          Save
-        </button>
-        <button type="button" onClick={handleModalClose}>
-          Cancel
-        </button>
-      </>
-    ),
     delete: (
       <>
-        <button type="button" onClick={handleDeleteConfirm}>
+        <button
+          type="button"
+          class="focus:outline-none text-white bg-red-700 hover:bg-red-800 
+             focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5
+              py-2.5 me-2 mb-2 dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-900"
+          onClick={handleDeleteConfirm}
+        >
           Delete
         </button>
-        <button type="button" onClick={handleModalClose}>
+        <button
+          type="button"
+          class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300
+          font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700
+           focus:outline-none dark:focus:ring-blue-800"
+          onClick={handleModalClose}
+        >
           Cancel
         </button>
       </>
@@ -155,7 +150,7 @@ const DevicesList = () => {
 
   return (
     <div className="flex flex-col justify-start items-center min-h-screen">
-         {notification.show && (
+      {notification.show && (
         <NotificationBanner
           message={notification.message}
           type={notification.type}
@@ -205,7 +200,7 @@ const DevicesList = () => {
         <AddDeviceModal
           isOpen={isModalOpen}
           closeModal={handleModalClose}
-          showNotification={showNotification} 
+          showNotification={showNotification}
           refreshDevices={fetchDevices}
         />
       )}
@@ -215,7 +210,7 @@ const DevicesList = () => {
           isOpen={isModalOpen}
           closeModal={handleModalClose}
           device={selectedDevice}
-          showNotification={showNotification} 
+          showNotification={showNotification}
           refreshDevices={fetchDevices}
         />
       )}
@@ -234,7 +229,9 @@ const DevicesList = () => {
       <PageNavigation
         totalPages={totalPages}
         currentPage={currentPage}
-        handlePageNavigation={(newPage) => fetchDevices(newPage, 10, searchQuery)}
+        handlePageNavigation={(newPage) =>
+          fetchDevices(newPage, 10, searchQuery)
+        }
       />
     </div>
   );

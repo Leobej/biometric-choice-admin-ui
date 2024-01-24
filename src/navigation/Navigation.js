@@ -19,14 +19,7 @@ const Navigation = () => {
             <div className="flex space-x-4">
               {userRole === "ADMIN" && (
                 <>
-                  <NavLink
-                    to="/admin"
-                    exact
-                    activeClassName="text-yellow-500 border-b-2 border-yellow-500"
-                    className="text-white text-lg px-4 py-2 hover:text-gray-300"
-                  >
-                    Dashboard
-                  </NavLink>
+       
                   <NavLink
                     to="/elections"
                     activeClassName="text-yellow-500 border-b-2 border-yellow-500"

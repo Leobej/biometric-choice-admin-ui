@@ -27,14 +27,7 @@ function App() {
         <Routes>
           <Route exact path="/" element={<Login />} />
           <Route path="/login" element={<Login />} />
-          <Route
-            path="/admin"
-            element={
-              <RoleBasedAccess roles={["ADMIN"]}>
-                <AdminDashboard />
-              </RoleBasedAccess>
-            }
-          />
+        
           <Route
             path="/registration"
             element={

@@ -10,6 +10,8 @@ const EditElectionModal = ({
 }) => {
   const [description, setDescription] = useState("");
   const [startDate, setStartDate] = useState("");
+  const [location, setLocation] = useState("");
+  const [locations, setLocations] = useState([]);
   const [endDate, setEndDate] = useState("");
   const [candidates, setCandidates] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -32,6 +34,7 @@ const EditElectionModal = ({
         ? new Date(election.endDate).toISOString().slice(0, 16)
         : ""
     );
+    setLocation(election.locationId);
     if (election && election.candidates) {
       setSelectedCandidates(election.candidates);
     } else {
@@ -74,10 +77,11 @@ const EditElectionModal = ({
       startDate,
       endDate,
       candidates: selectedCandidates,
-      location: election.location,
+      locationId: location,
     };
 
     try {
+      console.log("Updated election:", updatedElection);
       const token = localStorage.getItem("token");
       await axios.put(`http://localhost:8080/elections`, updatedElection, {
         headers: {
@@ -94,6 +98,25 @@ const EditElectionModal = ({
       showNotification("Failed to update election", "error");
     }
   };
+
+  useEffect(() => {
+    const fetchLocations = async () => {
+      const token = localStorage.getItem("token");
+      try {
+        const response = await axios.get(`http://localhost:8080/locations`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        console.log("Fetched locations:", response.data); // Log the response
+        setLocations(response.data.content); // Assuming response.data is an array of locations
+      } catch (error) {
+        console.error("Error fetching locations:", error);
+      }
+    };
+
+    if (isOpen) {
+      fetchLocations();
+    }
+  }, [isOpen]);
 
   const handleCandidateClick = (candidate) => {
     const isAlreadySelected = selectedCandidates.some(
@@ -118,9 +141,7 @@ const EditElectionModal = ({
 
   return (
     <div className="fixed z-10 inset-0 overflow-y-auto">
-      {/* Modal content */}
       <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-        {/* More modal content */}
         <div
           className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full"
           role="dialog"
@@ -128,11 +149,8 @@ const EditElectionModal = ({
           aria-labelledby="modal-headline"
         >
           <form onSubmit={handleSubmit}>
-            {/* Form content */}
             <div className="px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-              {/* Description, Candidate, and Dates inputs */}
               <div className="mt-4">
-                {/* Description input */}
                 <label htmlFor="description" className="block text-gray-700">
                   Description:
                 </label>
@@ -169,7 +187,6 @@ const EditElectionModal = ({
               </div>
 
               <div className="mt-4">
-                {/* Candidate input */}
                 <label htmlFor="candidate" className="block text-gray-700">
                   Candidate:
                 </label>
@@ -199,7 +216,6 @@ const EditElectionModal = ({
                 </ul>
               </div>
               <div className="mt-4">
-                {/* Start Date input */}
                 <label htmlFor="startDate" className="block text-gray-700">
                   Start Date:
                 </label>
@@ -214,7 +230,6 @@ const EditElectionModal = ({
                 />
               </div>
               <div className="mt-4">
-                {/* End Date input */}
                 <label htmlFor="endDate" className="block text-gray-700">
                   End Date:
                 </label>
@@ -228,8 +243,26 @@ const EditElectionModal = ({
                   className="form-input mt-1 block w-full"
                 />
               </div>
-
-              {/* Submit and Cancel buttons */}
+              <div className="mt-4">
+                <label htmlFor="location" className="block text-gray-700">
+                  Location:
+                </label>
+                <select
+                  id="location"
+                  name="location"
+                  value={location}
+                  onChange={(e) => setLocation(e.target.value)}
+                  required
+                  className="form-select mt-1 block w-full"
+                >
+                  <option value="">Select a location</option>
+                  {locations.map((loc) => (
+                    <option key={loc.locationId} value={loc.locationId}>
+                      {loc.city}, {loc.street}
+                    </option>
+                  ))}
+                </select>
+              </div>
               <div className="px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
                 <span className="flex w-full rounded-md shadow-sm sm:ml-3 sm:w-auto">
                   <button

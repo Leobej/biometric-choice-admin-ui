@@ -54,4 +54,4 @@ const DeleteConfirmationModal = ({ isOpen, closeModal, handleDelete }) => {
   );
 };
 
-export default DeleteConfirmationModal;
+// export default DeleteConfirmationModal;

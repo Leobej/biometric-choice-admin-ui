@@ -6,7 +6,8 @@ const AddVoterModal = ({ isOpen, closeModal, showNotification }) => {
   const [fingerprintId, setFingerprintId] = useState("");
   const [firstname, setFirstname] = useState("");
   const [lastname, setLastname] = useState("");
-
+  const [birthdate, setBirthdate] = useState("");
+  
   const handleSubmit = async (event) => {
     event.preventDefault();
 
@@ -14,7 +15,8 @@ const AddVoterModal = ({ isOpen, closeModal, showNotification }) => {
       firstname,
       lastname,
       cnp,
-      fingerprintId, // Assuming fingerprintId is a string. If it's a number, convert it before sending.
+      fingerprintId,
+      birthdate // Assuming fingerprintId is a string. If it's a number, convert it before sending.
     };
 
     try {
@@ -118,6 +120,21 @@ const AddVoterModal = ({ isOpen, closeModal, showNotification }) => {
                   name="lastname"
                   value={lastname}
                   onChange={(event) => setLastname(event.target.value)}
+                  required
+                  className="form-input mt-1 block w-full"
+                />
+              </div>
+
+              <div className="mt-4">
+                <label htmlFor="birthdate" className="block text-gray-700">
+                  Birthdate:
+                </label>
+                <input
+                  type="date"
+                  id="birthdate"
+                  name="birthdate"
+                  value={birthdate}
+                  onChange={(event) => setBirthdate(event.target.value)}
                   required
                   className="form-input mt-1 block w-full"
                 />
