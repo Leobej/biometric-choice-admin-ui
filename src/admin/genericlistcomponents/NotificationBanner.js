@@ -4,17 +4,14 @@ const NotificationBanner = ({ message, type, onClose }) => {
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
-    // Start with the banner invisible and then fade in
     const fadeInTimer = setTimeout(() => {
       setIsVisible(true);
-    }, 100); // Short delay before starting the fade in
+    }, 100); 
 
-    // Start a timer to automatically close the banner
     const fadeOutTimer = setTimeout(() => {
       setIsVisible(false);
-    }, 4700); // Keep the banner visible for a bit longer
+    }, 4700); 
 
-    // Clear the timeouts if the component is unmounted
     return () => {
       clearTimeout(fadeInTimer);
       clearTimeout(fadeOutTimer);
@@ -22,9 +19,9 @@ const NotificationBanner = ({ message, type, onClose }) => {
   }, []);
 
   useEffect(() => {
-    // When the banner is no longer visible, call onClose
+
     if (!isVisible) {
-      const closeTimer = setTimeout(onClose, 600); // Wait for the fade-out to complete
+      const closeTimer = setTimeout(onClose, 600); 
       return () => clearTimeout(closeTimer);
     }
   }, [isVisible, onClose]);

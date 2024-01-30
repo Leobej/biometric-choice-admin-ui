@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import GenericTable from "../genericlistcomponents/GenericTable";
 import GenericModal from "../genericlistcomponents/GenericModal";
-import GenericForm from "../genericlistcomponents/GenericForm";
 import PageNavigation from "../genericlistcomponents/PageNavigation";
 import ActionBar from "../genericlistcomponents/ActionBar";
 import EditLocationModal from "./EditLocationModal";
@@ -14,7 +13,7 @@ const LocationsList = () => {
   const [currentPage, setCurrentPage] = useState(0);
   const [selectedLocation, setSelectedLocation] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [modalType, setModalType] = useState(null); // 'add', 'edit', or 'delete'
+  const [modalType, setModalType] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [notification, setNotification] = useState({
     show: false,
@@ -103,8 +102,22 @@ const LocationsList = () => {
   };
 
   const handleDeleteConfirm = async () => {
+    const token = localStorage.getItem("token");
+    try {
+      await axios.delete(`http://localhost:8080/locations/${selectedLocation.locationId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+  
+      showNotification("Location deleted successfully", "success");
+      fetchLocations();
+    } catch (error) {
+      console.error("Error deleting location:", error);
+      showNotification("Failed to delete location", "error");
+    }
+  
     handleModalClose();
-    fetchLocations();
   };
 
   const footerMap = {

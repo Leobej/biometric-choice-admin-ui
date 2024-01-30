@@ -8,7 +8,6 @@ const EditVoterModal = ({
   refreshVoters,
   showNotification,
 }) => {
-  // Local state to track the form field values
   const [firstname, setFirstName] = useState(voter ? voter.firstname : "");
   const [lastname, setLastName] = useState(voter ? voter.lastname : "");
   const [cnp, setCnp] = useState(voter ? voter.cnp : "");
@@ -44,13 +43,13 @@ const EditVoterModal = ({
         response.status === 201 ||
         response.status === 202
       ) {
-        showNotification("Voter updated successfully", "success"); // Use showNotification
+        showNotification("Voter updated successfully", "success");
         refreshVoters();
         closeModal();
       }
     } catch (error) {
       console.error("Error updating voter:", error);
-      showNotification("Error updating voter. Please try again.", "error"); // Use showNotification
+      showNotification("Error updating voter. Please try again.", "error");
     }
   };
 

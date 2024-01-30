@@ -136,16 +136,7 @@ const AddCandidateModal = ({
                   />
                 </label>
               </div>
-              <div className="mt-4">
-                <label className="block">
-                  <span className="text-gray-700">Candidate Image</span>
-                  <input
-                    type="file"
-                    className="form-input mt-1 block w-full"
-                    onChange={(event) => setImage(event.target.files[0])}
-                  />
-                </label>
-              </div>
+    
             </div>
             <div className="px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
               <span className="flex w-full rounded-md shadow-sm sm:ml-3 sm:w-auto">

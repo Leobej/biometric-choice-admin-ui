@@ -14,7 +14,7 @@ const VotersList = () => {
   const [currentPage, setCurrentPage] = useState(0);
   const [selectedVoter, setSelectedVoter] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [modalType, setModalType] = useState(null); // 'add', 'edit', or 'delete'
+  const [modalType, setModalType] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [notification, setNotification] = useState({
     show: false,
@@ -22,7 +22,6 @@ const VotersList = () => {
     type: "",
   });
 
-  // Function to show notification
   const showNotification = (message, type) => {
     setNotification({ show: true, message, type });
     setTimeout(() => setNotification({ ...notification, show: false }), 5000);
@@ -69,14 +68,11 @@ const VotersList = () => {
 
   const fetchVoters = async (page = 0, size = 10, searchQuery = "") => {
     const token = localStorage.getItem("token");
-    // Prepare the base URL and parameters
     let url = new URL(`http://localhost:8080/voters`);
     let params = { page: page, size: size };
-    // If there's a search query, use it to search by both first name and last name
     if (searchQuery) {
       params["search"] = searchQuery;
     }
-    // Append the search parameters to the URL
     url.search = new URLSearchParams(params).toString();
 
     try {
@@ -86,7 +82,6 @@ const VotersList = () => {
         },
       });
       console.log("Response:", response);
-      // Update the state with the fetched data
       if (response.status === 200) {
         setVoters(response.data.content);
         setTotalPages(response.data.totalPages);
@@ -113,14 +108,29 @@ const VotersList = () => {
   };
 
   const handleDeleteConfirm = async () => {
-    // Delete voter logic...
+    const token = localStorage.getItem("token");
+    try {
+      await axios.delete(
+        `http://localhost:8080/voters/${selectedVoter.voterId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      showNotification("Voter deleted successfully", "success");
+      fetchVoters(currentPage, 10, searchQuery);
+    } catch (error) {
+      console.error("Error deleting voter:", error);
+      showNotification("Failed to delete voter", "error");
+    }
     handleModalClose();
-    fetchVoters();
   };
 
   const handleClearSearch = () => {
-    setSearchQuery(""); // Reset the search query
-    fetchVoters(); // Fetch the initial list of voters
+    setSearchQuery(""); 
+    fetchVoters(); 
   };
 
   const footerMap = {
@@ -203,13 +213,14 @@ const VotersList = () => {
             closeModal={handleModalClose}
             voter={selectedVoter}
             refreshVoters={fetchVoters}
-            showNotification={showNotification} // Pass showNotification as a prop
+            showNotification={showNotification} 
           />
-        ) : modalType === "add" ? ( // Check if modalType is 'add'
+        ) : modalType === "add" ? ( 
           <AddVoterModal
             isOpen={isModalOpen}
+            refreshVoters={fetchVoters}
             closeModal={handleModalClose}
-            showNotification={showNotification} // Pass showNotification as a prop
+            showNotification={showNotification} 
           />
         ) : (
           <GenericModal

@@ -15,7 +15,6 @@ const EditElectionModal = ({
   const [endDate, setEndDate] = useState("");
   const [candidates, setCandidates] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
-  // const [selectedCandidate, setSelectedCandidate] = useState(null);
   const [selectedCandidates, setSelectedCandidates] = useState(
     election.candidates || []
   );
@@ -43,7 +42,6 @@ const EditElectionModal = ({
     console.log("Select candidates:", selectedCandidates);
   }, [election]);
 
-  // Fetch candidates excluding already selected ones
   useEffect(() => {
     const fetchCandidates = async () => {
       const token = localStorage.getItem("token");
@@ -106,8 +104,8 @@ const EditElectionModal = ({
         const response = await axios.get(`http://localhost:8080/locations`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        console.log("Fetched locations:", response.data); // Log the response
-        setLocations(response.data.content); // Assuming response.data is an array of locations
+        console.log("Fetched locations:", response.data);
+        setLocations(response.data.content);
       } catch (error) {
         console.error("Error fetching locations:", error);
       }

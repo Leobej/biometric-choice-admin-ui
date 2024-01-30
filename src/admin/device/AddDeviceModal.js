@@ -11,16 +11,16 @@ const AddDeviceModal = ({
   const [status, setStatus] = useState("");
 
   const handleSubmit = async (event) => {
-    event.preventDefault(); // Keep this line only
+    event.preventDefault();
 
     const newDevice = { name, type, status };
-    console.log("Sending devic3e data:", newDevice);
+    console.log("Sending device data:", newDevice);
 
     try {
       const token = localStorage.getItem("token");
       const response = await axios.post(
         `http://localhost:8080/devices`,
-        { name: name, type: type, status: status },
+        { name, type, status },
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -79,13 +79,13 @@ const AddDeviceModal = ({
                     value={type}
                     onChange={(e) => setType(e.target.value)}
                   >
+                    <option value="">Select Type</option>{" "}
                     <option value="Fingerprint Registration">
                       Fingerprint Registration
                     </option>
                     <option value="Fingerprint Verification">
                       Fingerprint Verification
                     </option>
-                    <option value="Voting Device">Voting Device</option>
                   </select>
                 </label>
               </div>
@@ -97,6 +97,7 @@ const AddDeviceModal = ({
                     value={status}
                     onChange={(e) => setStatus(e.target.value)}
                   >
+                    <option value="">Select Status</option>{" "}
                     <option value="Active">Active</option>
                     <option value="Inactive">Inactive</option>
                   </select>

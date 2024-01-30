@@ -4,10 +4,7 @@ import { useNavigate } from "react-router";
 
 const RoleBasedAccess = ({ children, roles }) => {
   const { userRole } = useUserRole();
-const navigate = useNavigate();
-  // console.log("userRole:", userRole);
-  // console.log("roles:", roles);
-
+  const navigate = useNavigate();
   if (roles.includes(userRole)) {
     return children;
   } else {

@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import GenericTable from "../genericlistcomponents/GenericTable";
 import GenericModal from "../genericlistcomponents/GenericModal";
-import GenericForm from "../genericlistcomponents/GenericForm";
 import PageNavigation from "../genericlistcomponents/PageNavigation";
 import NotificationBanner from "../genericlistcomponents/NotificationBanner";
 import ActionBar from "../genericlistcomponents/ActionBar";
@@ -16,7 +15,7 @@ const ElectionsList = () => {
   const [currentPage, setCurrentPage] = useState(0);
   const [selectedElection, setSelectedElection] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [modalType, setModalType] = useState(null); // 'add', 'edit', or 'delete'
+  const [modalType, setModalType] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [notification, setNotification] = useState({
     show: false,
@@ -65,6 +64,8 @@ const ElectionsList = () => {
   const fields = [
     { label: "Description", key: "description" },
     { label: "Created at", key: "createdAt" },
+    { label: "Start at", key: "startDate" },
+    { label: "End at", key: "endDate" },
     {
       label: "Location",
       key: "locationDetails",
@@ -101,7 +102,7 @@ const ElectionsList = () => {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-      return response.data; // Assuming this returns the full location details
+      return response.data;
     } catch (error) {
       console.error("Error fetching location:", error);
       return null;
@@ -148,7 +149,29 @@ const ElectionsList = () => {
   };
 
   const handleDeleteConfirm = async () => {
-    handleModalClose();
+    if (selectedElection && selectedElection.electionId) {
+      const token = localStorage.getItem("token");
+      try {
+        await axios.delete(
+          `http://localhost:8080/elections/${selectedElection.electionId}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+
+        showNotification("Election deleted successfully", "success");
+        fetchElections(currentPage, 10, searchQuery);
+      } catch (error) {
+        console.error("Error deleting election:", error);
+        showNotification("Failed to delete election", "error");
+      }
+    } else {
+      showNotification("No election selected for deletion", "error");
+    }
+
+    setIsModalOpen(false);
+    setModalType(null);
+    setSelectedElection(null);
     fetchElections();
   };
 
@@ -160,7 +183,7 @@ const ElectionsList = () => {
           class="focus:outline-none text-white bg-red-700 hover:bg-red-800 
                     focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5
                      py-2.5 me-2 mb-2 dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-900"
-          onClick={handleDeleteConfirm} /* ...other attributes */
+          onClick={handleDeleteConfirm}
         >
           Delete
         </button>
@@ -169,8 +192,7 @@ const ElectionsList = () => {
           class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300
            font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700
             focus:outline-none dark:focus:ring-blue-800"
-       
-          onClick={handleModalClose} /* ...other attributes */
+          onClick={handleModalClose}
         >
           Cancel
         </button>

@@ -13,42 +13,32 @@ const EditDeviceModal = ({
 
   useEffect(() => {
     if (device) {
-      setName(device.name);
-      setType(device.type);
-      setStatus(device.status);
+      setName(device.name || "");
+      setType(device.type || "");
+      setStatus(device.status || "");
     }
   }, [device]);
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
     const updatedDevice = {
-      ...device,
+      id: device.id,
       name,
       type,
       status,
     };
-    saveDevice(updatedDevice);
-    closeModal();
-  };
 
-  const saveDevice = async (updatedDevice) => {
     try {
       const token = localStorage.getItem("token");
-      const response = await axios.put(
-        `http://localhost:8080/devices/${updatedDevice.id}`, // Your API endpoint
-        updatedDevice,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      await axios.put(`http://localhost:8080/devices/${updatedDevice.id}`, updatedDevice, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
-      if (response.status === 200) {
-        showNotification("Device updated successfully", "success");
-        refreshDevices();
-        closeModal();
-      }
+      showNotification("Device updated successfully", "success");
+      refreshDevices();
+      closeModal();
     } catch (error) {
       console.error("Error updating device:", error);
       showNotification("Error updating device. Please try again.", "error");

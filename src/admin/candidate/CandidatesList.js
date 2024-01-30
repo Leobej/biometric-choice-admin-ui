@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import GenericTable from "../genericlistcomponents/GenericTable";
 import GenericModal from "../genericlistcomponents/GenericModal";
-import GenericForm from "../genericlistcomponents/GenericForm";
 import PageNavigation from "../genericlistcomponents/PageNavigation";
 import ActionBar from "../genericlistcomponents/ActionBar";
 import EditCandidateModal from "./EditCandidateModal";
@@ -15,7 +14,7 @@ const CandidatesList = () => {
   const [currentPage, setCurrentPage] = useState(0);
   const [selectedCandidate, setSelectedCandidate] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [modalType, setModalType] = useState(null); // 'add', 'edit', or 'delete'
+  const [modalType, setModalType] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [notification, setNotification] = useState({
     show: false,
@@ -105,9 +104,28 @@ const CandidatesList = () => {
   };
 
   const handleDeleteConfirm = async () => {
-    // Delete candidate logic...
+    const token = localStorage.getItem("token");
+    if (selectedCandidate && selectedCandidate.candidateId) {
+      try {
+        await axios.delete(
+          `http://localhost:8080/candidates/${selectedCandidate.candidateId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        showNotification("Candidate deleted successfully", "success");
+        fetchCandidates(currentPage, 10, searchQuery);
+      } catch (error) {
+        console.error("Error deleting candidate:", error);
+        showNotification("Failed to delete candidate", "error");
+      }
+    } else {
+      showNotification("No candidate selected for deletion", "error");
+    }
+
     handleModalClose();
-    fetchCandidates();
   };
 
   const handleClearSearch = () => {
@@ -132,7 +150,7 @@ const CandidatesList = () => {
           class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300
            font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700
             focus:outline-none dark:focus:ring-blue-800"
-          onClick={handleModalClose} /* ...other attributes */
+          onClick={handleModalClose} 
         >
           Cancel
         </button>

@@ -12,13 +12,10 @@ const AddElectionModal = ({
   const [description, setDescription] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
-  const [candidateId, setCandidateId] = useState("");
   const [location, setLocation] = useState("");
   const [locations, setLocations] = useState([]);
   const [isAllSelected, setIsAllSelected] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [searchResult, setSearchResult] = useState(null);
-  const [searchTerm, setSearchTerm] = useState("");
   const [selectedCandidate, setSelectedCandidate] = useState(null);
   const [selectedCandidates, setSelectedCandidates] = useState([]);
   const [candidates, setCandidates] = useState([]);
@@ -124,14 +121,13 @@ const AddElectionModal = ({
   }, [navigate]);
 
   useEffect(() => {
-    // Fetch devices and transform them into select options
     const fetchDevices = async () => {
       const token = localStorage.getItem("token");
       try {
         const response = await axios.get(`http://localhost:8080/devices`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        console.log("Fetched devices:", response.data); // Log the response
+        console.log("Fetched devices:", response.data);
         const options = response.data.content.map((device) => ({
           value: device.id,
           label: `${device.name} (${device.type})`,
@@ -154,9 +150,8 @@ const AddElectionModal = ({
         const response = await axios.get(`http://localhost:8080/candidates`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        console.log("Fetched candidates:", response.data.content); // Log the response
+        console.log("Fetched candidates:", response.data.content); 
 
-        // Access the 'content' field of the response data
         if (response.data && Array.isArray(response.data.content)) {
           setCandidates(response.data.content);
           console.log("Setted Candidates: ", candidates);
@@ -165,62 +160,31 @@ const AddElectionModal = ({
             "Expected an array for candidates in 'content', received:",
             response.data
           );
-          setCandidates([]); // Set to empty array if the 'content' field is not an array
+          setCandidates([]); 
         }
       } catch (error) {
         console.error("Error fetching candidates:", error);
-        // setCandidates([]); // Set to empty array on error
       }
     };
 
     fetchCandidates();
   }, []);
 
-  // useEffect(() => {
-  //   const fetchCandidates = async () => {
-  //     const token = localStorage.getItem("token");
-  //     const response = await axios.get(
-  //       `http://localhost:8080/candidates/searchName?query=${searchQuery}`,
-  //       {
-  //         headers: {
-  //           "Content-Type": "multipart/form-data",
-  //           Authorization: `Bearer ${token}`,
-  //         },
-  //       }
-  //     );
-
-  //     if (response.data.content.length > 0) {
-  //       setCandidates(response.data.content);
-  //       console.log(candidates);
-  //     } else {
-  //       setCandidates([]);
-  //     }
-  //   };
-
-  //   const timer = setTimeout(() => {
-  //     fetchCandidates();
-  //   }, 300);
-
-  //   return () => clearTimeout(timer);
-  // }, [searchQuery]);
-
   const resetForm = () => {
     setDescription("");
     setStartDate("");
     setEndDate("");
-    setLocation(""); // Reset location
+    setLocation("");
     setSelectedDevices([]);
   };
 
   const toggleSelectAll = () => {
-    // Immediately invoke the function to use the current state before it updates
     setIsAllSelected((currentIsAllSelected) => {
-      // Based on the new state we determine whether to select all or deselect all
       const newSelectedDevices = !currentIsAllSelected
         ? deviceOptions.map((option) => option.value)
         : [];
       setSelectedDevices(newSelectedDevices);
-      return !currentIsAllSelected; // Return the new state
+      return !currentIsAllSelected; 
     });
   };
 
@@ -353,7 +317,7 @@ const AddElectionModal = ({
                         setSelectAll(deviceIds.length === deviceOptions.length);
                       }}
                       className="basic-multi-select h-40 overflow-auto"
-                      classNamePrefix="select" // This prefix is used to consistently style subcomponents of react-select
+                      classNamePrefix="select" 
                     />
                     <div className="absolute top-0 right-0 h-10 w-10 bg-white" />
                   </div>

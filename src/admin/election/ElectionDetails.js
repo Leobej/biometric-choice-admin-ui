@@ -17,15 +17,15 @@ const ElectionDetails = () => {
   let { id } = useParams();
   const [electionData, setElectionData] = useState({
     candidates: [],
-    electionResults: [],
   });
 
   const [votingTrends, setVotingTrends] = useState([]);
   const [votesByCandidate, setVotesByCandidate] = useState({});
   const [totalVotes, setTotalVotes] = useState(0);
   const [selectedCandidateId, setSelectedCandidateId] = useState("");
-  const [selectedDevices, setSelectedDevices] = useState([]);
   const [allDevices, setAllDevices] = useState([]);
+  const [sortedCandidates, setSortedCandidates] = useState([]);
+  const [winner, setWinner] = useState(null);
 
   const fetchVotingTrends = (candidateId) => {
     const token = localStorage.getItem("token");
@@ -49,17 +49,6 @@ const ElectionDetails = () => {
     setSelectedCandidateId(candidateId);
     fetchVotingTrends(candidateId);
   };
-  
-  const handleDeviceSelectionChange = (device) => {
-    // Update selected devices
-    setSelectedDevices((prevSelected) => {
-      if (prevSelected.includes(device.id)) {
-        return prevSelected.filter((d) => d !== device.id);
-      } else {
-        return [...prevSelected, device.id];
-      }
-    });
-  };
 
   useEffect(() => {
     const newTotalVotes = Object.values(votesByCandidate).reduce(
@@ -70,54 +59,71 @@ const ElectionDetails = () => {
   }, [votesByCandidate]);
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      console.log("No token found");
-      return;
-    }
+    const fetchElectionData = async () => {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        console.log("No token found");
+        return;
+      }
 
-    // Fetch election details
-    axios
-      .get(`/elections/${id}/details`, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-      .then((response) => {
-        setElectionData(response.data);
-
-        // Fetch aggregated votes for all candidates
-        return axios.get(`/elections/${id}/aggregated-votes`, {
+      try {
+        const electionResponse = await axios.get(`/elections/${id}/details`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-      })
-      .then((response) => {
-        const initialVotesByCandidate = response.data.reduce((acc, current) => {
-          acc[current.candidateId] = current.voteCount;
-          return acc;
-        }, {});
-        setVotesByCandidate(initialVotesByCandidate);
+        const electionDetails = electionResponse.data;
+        setElectionData(electionDetails);
 
-        // Fetch overall voting trends
-        return axios.get(`/elections/${id}/voting-trends`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-      })
-      .then((response) => {
-        const trendsData = response.data;
-        const formattedTrends = trendsData.map((trend) => {
-          const date = new Date(trend.date).toLocaleDateString("en-US");
-          return {
-            date: date,
-            totalVotes: trend.totalVotes,
-            candidateId: trend.candidateIdResult,
-          };
-        });
-        setVotingTrends(formattedTrends);
-      })
-      .catch((error) => console.error(error));
+        const aggregatedVotesResponse = await axios.get(
+          `/elections/${id}/aggregated-votes`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+        const votesByCandidate = aggregatedVotesResponse.data.reduce(
+          (acc, current) => {
+            acc[current.candidateId] = current.voteCount;
+            return acc;
+          },
+          {}
+        );
+
+        const sortedCandidates = electionDetails.candidates
+          .map((candidate) => ({
+            ...candidate,
+            voteCount: votesByCandidate[candidate.candidateId] || 0,
+          }))
+          .sort((a, b) => b.voteCount - a.voteCount);
+
+        setSortedCandidates(sortedCandidates);
+        setVotesByCandidate(votesByCandidate);
+
+        const currentDate = new Date();
+        const endDate = new Date(electionDetails.endDate);
+        if (currentDate > endDate && sortedCandidates.length > 0) {
+          setWinner(sortedCandidates[0]);
+        }
+
+        const trendsResponse = await axios.get(
+          `/elections/${id}/voting-trends`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+        const trendsData = trendsResponse.data.map((trend) => ({
+          date: new Date(trend.date).toLocaleDateString("en-US"),
+          totalVotes: trend.totalVotes,
+        }));
+
+        setVotingTrends(trendsData);
+      } catch (error) {
+        console.error("Error fetching election data:", error);
+      }
+    };
+
+    fetchElectionData();
   }, [id]);
 
   useEffect(() => {
-    // Fetch all devices
     const fetchDevices = async () => {
       const token = localStorage.getItem("token");
       try {
@@ -150,10 +156,20 @@ const ElectionDetails = () => {
         </p>
       </div>
 
+      {winner && (
+        <div className="mb-4">
+          <h2 className="text-xl font-bold">
+            Election Winner: {winner.firstname} {winner.lastname}
+          </h2>
+          <p>Party: {winner.party}</p>
+          <p>Votes: {votesByCandidate[winner.candidateId]}</p>
+        </div>
+      )}
+
       <div className="mb-8">
         <h2 className="text-xl font-bold mb-3">Total Votes: {totalVotes}</h2>
         <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {electionData.candidates.map((candidate, index) => (
+          {sortedCandidates.map((candidate, index) => (
             <div
               key={index}
               className="bg-white shadow-md rounded-lg p-6 text-center"

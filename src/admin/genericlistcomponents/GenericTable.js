@@ -33,7 +33,7 @@ const GenericTable = ({ data, onRowClick, selectedData, columns, idField }) => {
                   key={colIndex}
                   className="border border-gray-600 px-4 py-2 text-gray-800"
                 >
-                  {col.render ? col.render(item) : item[col.key]} {/* Check for render function */}
+                  {col.render ? col.render(item) : item[col.key]}
                 </td>
               ))}
             </tr>

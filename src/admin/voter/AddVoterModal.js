@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 
-const AddVoterModal = ({ isOpen, closeModal, showNotification }) => {
+const AddVoterModal = ({ isOpen, closeModal, showNotification, refreshVoters }) => {
   const [cnp, setCnp] = useState("");
   const [fingerprintId, setFingerprintId] = useState("");
   const [firstname, setFirstname] = useState("");
@@ -16,7 +16,7 @@ const AddVoterModal = ({ isOpen, closeModal, showNotification }) => {
       lastname,
       cnp,
       fingerprintId,
-      birthdate // Assuming fingerprintId is a string. If it's a number, convert it before sending.
+      birthdate 
     };
 
     try {
@@ -32,13 +32,14 @@ const AddVoterModal = ({ isOpen, closeModal, showNotification }) => {
       );
 
       if (response.status === 201 || response.status === 200) {
-        showNotification("Voter added successfully!", "success"); // Use showNotification here
+        showNotification("Voter added successfully!", "success");
         resetForm();
+        refreshVoters();
         closeModal();
       }
     } catch (error) {
       console.error("Error adding voter:", error);
-      showNotification("Error adding voter. Please try again.", "error"); // Use showNotification here
+      showNotification("Error adding voter. Please try again.", "error"); 
     }
   };
 

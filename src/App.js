@@ -2,7 +2,6 @@ import React from "react";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import Login from "./login/Login";
 import FingerprintRegistration from "./fingerprintregistration/FingerprintRegistration";
-import AdminDashboard from "./admin/ActiveElectionsDashboard";
 import CreateCandidateForm from "./admin/candidate/AddCandidateModal";
 import Home from "./home/Home";
 import { UserRoleProvider } from "./context/UserRoleContext";

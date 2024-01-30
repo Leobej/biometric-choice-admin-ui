@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import GenericTable from "../genericlistcomponents/GenericTable";
 import GenericModal from "../genericlistcomponents/GenericModal";
-import GenericForm from "../genericlistcomponents/GenericForm";
 import PageNavigation from "../genericlistcomponents/PageNavigation";
 import ActionBar from "../genericlistcomponents/ActionBar";
 import EditDeviceModal from "./EditDeviceModal";
@@ -15,7 +14,7 @@ const DevicesList = () => {
   const [currentPage, setCurrentPage] = useState(0);
   const [selectedDevice, setSelectedDevice] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [modalType, setModalType] = useState(null); // 'add', 'edit', or 'delete'
+  const [modalType, setModalType] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [notification, setNotification] = useState({
     show: false,
@@ -23,13 +22,11 @@ const DevicesList = () => {
     type: "",
   });
 
-  // Function to show notification
   const showNotification = (message, type) => {
     setNotification({ show: true, message, type });
     setTimeout(() => setNotification({ ...notification, show: false }), 5000);
   };
 
-  // Function to close notification manually
   const closeNotification = () => {
     setNotification({ ...notification, show: false });
   };
@@ -80,7 +77,7 @@ const DevicesList = () => {
         params: {
           page,
           size,
-          search: searchQuery, // Assuming your API accepts a 'search' query parameter
+          search: searchQuery,
         },
         headers: {
           Authorization: `Bearer ${token}`,
@@ -90,13 +87,12 @@ const DevicesList = () => {
         setDevices(response.data.content);
         setTotalPages(response.data.totalPages);
         setCurrentPage(page);
-        showNotification("Devices fetched successfully", "success"); // Display success notification
       } else {
         setDevices([]);
       }
     } catch (error) {
       console.error("Error fetching devices:", error);
-      showNotification("Error fetching devices", "error"); // Display error notification
+      showNotification("Error fetching devices", "error");
     }
   };
 
@@ -113,14 +109,30 @@ const DevicesList = () => {
   };
 
   const handleDeleteConfirm = async () => {
-    // Delete device logic...
-    handleModalClose();
+    if (selectedDevice && selectedDevice.id) {
+      await deleteDevice(selectedDevice.id);
+    }
     fetchDevices();
+    handleModalClose();
+  };
+
+  const deleteDevice = async (deviceId) => {
+    const token = localStorage.getItem("token");
+    try {
+      await axios.delete(`http://localhost:8080/devices/${deviceId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      showNotification("Device deleted successfully", "success");
+      fetchDevices(); // Fetch updated list of devices
+    } catch (error) {
+      console.error("Error deleting device:", error);
+      showNotification("Failed to delete device", "error");
+    }
   };
 
   const handleClearSearch = () => {
-    setSearchQuery(""); // Reset the search query
-    fetchDevices(); // Fetch the initial list of devices
+    setSearchQuery("");
+    fetchDevices();
   };
 
   const footerMap = {
