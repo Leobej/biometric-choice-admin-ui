@@ -1,5 +1,5 @@
 import React from "react";
-import {  useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import axios from "axios";
 import Select from "react-select";
@@ -14,11 +14,11 @@ function FingerprintRegistration() {
   const [devices, setDevices] = useState([]);
   const [registerStatus, setRegisterStatus] = useState("pending");
   const [birthdate, setBirthdate] = useState("");
-  const [selectedDevice, setSelectedDevice] = useState(null); 
+  const [selectedDevice, setSelectedDevice] = useState(null);
 
   const handleDeviceChange = (selectedOption) => {
     setSelectedDevice(selectedOption);
-    setDeviceId(selectedOption.value); 
+    setDeviceId(selectedOption.value);
     console.log(selectedOption.value);
   };
 
@@ -94,9 +94,17 @@ function FingerprintRegistration() {
     birthdate,
   };
 
+  const handleCancel = () => {
+    setBirthdate("");
+    setCnp("");
+    setFirstName("");
+    setLastName("");
+  };
+
   const handleSubmit = async (event) => {
     event.preventDefault();
     setRegisterStatus("pending");
+    console.log("submit");
     console.log(localStorage.getItem("token"));
     try {
       const token = localStorage.getItem("token");
@@ -134,8 +142,8 @@ function FingerprintRegistration() {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem("token"); // remove the token from local storage
-    navigate("/login"); // navigate to the login page
+    localStorage.removeItem("token");
+    navigate("/login");
   };
 
   return (
@@ -246,7 +254,6 @@ function FingerprintRegistration() {
             </div>
           </div>
 
-  
           <div className="flex items-center justify-between mt-6">
             <button
               className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
@@ -271,7 +278,11 @@ function FingerprintRegistration() {
               )}
             </div>
             <div className="flex space-x-4">
-              <button className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+              <button
+                className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                type="button"
+                onClick={handleCancel}
+              >
                 Cancel
               </button>
               <button

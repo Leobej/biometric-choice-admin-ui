@@ -64,11 +64,37 @@ const DevicesList = () => {
     { label: "Device name", key: "name" },
     { label: "Device Type", key: "type" },
     { label: "Device Status", key: "status" },
+    {
+      label: "Location",
+      key: "locationDetails",
+      render: (election) => {
+        return election.locationDetails
+          ? `${election.locationDetails.city}, ${election.locationDetails.street},${election.locationDetails.number}`
+          : "N/A";
+      },
+    },
   ];
 
   useEffect(() => {
     fetchDevices();
   }, []);
+
+
+  const fetchLocationDetails = async (locationId) => {
+    const token = localStorage.getItem("token");
+    try {
+      const response = await axios.get(
+        `http://localhost:8080/locations/${locationId}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching location:", error);
+      return null;
+    }
+  };
 
   const fetchDevices = async (page = 0, size = 10, searchQuery = "") => {
     const token = localStorage.getItem("token");
@@ -84,12 +110,24 @@ const DevicesList = () => {
         },
       });
       if (response.data && response.data.content) {
-        setDevices(response.data.content);
+        console.log(response.data.content);
+        const deviceWithLocation = await Promise.all(
+        
+          response.data.content.map(async (device) => {
+            const locationDetails = await fetchLocationDetails(
+              device.locationId
+            );
+            return { ...device, locationDetails };
+          })
+        );
+        setDevices(deviceWithLocation);
         setTotalPages(response.data.totalPages);
         setCurrentPage(page);
       } else {
         setDevices([]);
       }
+
+     
     } catch (error) {
       console.error("Error fetching devices:", error);
       showNotification("Error fetching devices", "error");

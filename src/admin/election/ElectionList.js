@@ -38,14 +38,24 @@ const ElectionsList = () => {
     setTimeout(() => setNotification({ ...notification, show: false }), 5000);
   };
 
-  const onEditClick = () => {
-    if (selectedElection) {
+  const isDatePast = (endDateString) => {
+    const endDate = new Date(endDateString);
+    const currentDate = new Date();
+    return currentDate > endDate;
+  };
+
+const onEditClick = () => {
+  if (selectedElection) {
+    if (isDatePast(selectedElection.endDate)) {
+      alert("Editing not allowed. This election has already ended.");
+    } else {
       setModalType("edit");
       setIsModalOpen(true);
-    } else {
-      alert("Please select an election to edit.");
     }
-  };
+  } else {
+    alert("Please select an election to edit.");
+  }
+};
 
   const onDeleteClick = () => {
     if (selectedElection) {
@@ -60,6 +70,7 @@ const ElectionsList = () => {
     setSearchQuery("");
     fetchElections();
   };
+  
 
   const fields = [
     { label: "Description", key: "description" },
@@ -141,11 +152,6 @@ const ElectionsList = () => {
     setIsModalOpen(false);
     setModalType(null);
     setSelectedElection(null);
-  };
-
-  const handleSave = async (values) => {
-    handleModalClose();
-    fetchElections();
   };
 
   const handleDeleteConfirm = async () => {

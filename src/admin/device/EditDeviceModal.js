@@ -10,12 +10,15 @@ const EditDeviceModal = ({
   const [name, setName] = useState("");
   const [type, setType] = useState("");
   const [status, setStatus] = useState("");
+  const [locations, setLocations] = useState([]);
+  const [location, setLocation] = useState("");
 
   useEffect(() => {
     if (device) {
       setName(device.name || "");
       setType(device.type || "");
       setStatus(device.status || "");
+      setLocation(device.locationId || "");
     }
   }, [device]);
 
@@ -26,15 +29,20 @@ const EditDeviceModal = ({
       name,
       type,
       status,
+      locationId: location,
     };
 
     try {
       const token = localStorage.getItem("token");
-      await axios.put(`http://localhost:8080/devices/${updatedDevice.id}`, updatedDevice, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      await axios.put(
+        `http://localhost:8080/devices/${updatedDevice.id}`,
+        updatedDevice,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
       showNotification("Device updated successfully", "success");
       refreshDevices();
@@ -44,6 +52,25 @@ const EditDeviceModal = ({
       showNotification("Error updating device. Please try again.", "error");
     }
   };
+
+  useEffect(() => {
+    const fetchLocations = async () => {
+      const token = localStorage.getItem("token");
+      try {
+        const response = await axios.get(`http://localhost:8080/locations`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        console.log("Fetched locations:", response.data);
+        setLocations(response.data.content);
+      } catch (error) {
+        console.error("Error fetching locations:", error);
+      }
+    };
+
+    if (isOpen) {
+      fetchLocations();
+    }
+  }, [isOpen]);
 
   if (!isOpen) {
     return null;
@@ -105,6 +132,26 @@ const EditDeviceModal = ({
                     <option value="Inactive">Inactive</option>
                   </select>
                 </label>
+              </div>
+              <div className="mt-4">
+                <label htmlFor="location" className="block text-gray-700">
+                  Location:
+                </label>
+                <select
+                  id="location"
+                  name="location"
+                  value={location}
+                  onChange={(e) => setLocation(e.target.value)}
+                  required
+                  className="form-select mt-1 block w-full"
+                >
+                  <option value="">Select a location</option>
+                  {locations.map((loc) => (
+                    <option key={loc.locationId} value={loc.locationId}>
+                      {loc.city}, {loc.street}
+                    </option>
+                  ))}
+                </select>
               </div>
             </div>
             <div className="px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">

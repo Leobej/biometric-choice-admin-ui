@@ -21,22 +21,10 @@ const AddElectionModal = ({
   const [candidates, setCandidates] = useState([]);
   const [devices, setDevices] = useState([]);
   const [selectedDevices, setSelectedDevices] = useState([]);
-  const [selectAll, setSelectAll] = useState(false); // New state for tracking select all
+  const [selectAll, setSelectAll] = useState(false); 
 
   const navigate = useNavigate();
-  const [deviceOptions, setDeviceOptions] = useState([]); // Options for react-select
-
-  const handleSelectAllDevices = () => {
-    const allDeviceIds = deviceOptions.map((option) => option.value);
-    setSelectedDevices(allDeviceIds);
-    setSelectAll(true);
-  };
-
-  // Function to handle deselecting all devices
-  const handleDeselectAllDevices = () => {
-    setSelectedDevices([]);
-    setSelectAll(false);
-  };
+  const [deviceOptions, setDeviceOptions] = useState([]);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -52,7 +40,7 @@ const AddElectionModal = ({
         startDate: new Date(startDate).toISOString(),
         endDate: new Date(endDate).toISOString(),
         active: true,
-        candidates: candidateIds, // Include candidate IDs in the request
+        candidates: candidateIds, 
       };
 
       const electionResponse = await axios.post(
@@ -66,20 +54,20 @@ const AddElectionModal = ({
       );
       if (electionResponse.status === 201 || electionResponse.status === 200) {
         showNotification("Election created successfully!", "success");
-        resetForm(); // Reset the form fields
-        closeModal(); // Close the modal
-        // Optionally, you can also call a function to refresh the list of elections here if it's available in the parent component
+        resetForm(); 
+        closeModal(); 
+     
       } else {
         // Handle non-successful responses
         showNotification("Failed to create election", "error");
       }
-      const electionId = electionResponse.data.electionId; // Get the newly created election ID
+      const electionId = electionResponse.data.electionId; 
 
-      const deviceAssociationsPromises = selectedDevices.map((deviceId) =>
+      selectedDevices.map((deviceId) =>
         axios.post(
           `http://localhost:8080/election-devices/add`,
           {
-            electionId: electionId, // Make sure the names match the DTO fields
+            electionId: electionId, 
             deviceId: deviceId,
           },
           {
@@ -101,8 +89,8 @@ const AddElectionModal = ({
         const response = await axios.get(`http://localhost:8080/locations`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        console.log("Fetched locations:", response.data); // Log the response
-        setLocations(response.data.content); // Assuming response.data is an array of locations
+        console.log("Fetched locations:", response.data); 
+        setLocations(response.data.content); 
       } catch (error) {
         console.error("Error fetching locations:", error);
       }

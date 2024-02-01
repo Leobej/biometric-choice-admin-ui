@@ -1,10 +1,17 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
-import { useUserRole } from "../context/UserRoleContext";
+import { useUserRole } from "./../context/UserRoleContext";
 import Logo from "../assets/Logo.png";
+import { useNavigate } from "react-router";
 
 const Navigation = () => {
-  const { userRole } = useUserRole();
+  const { userRole, setUserRole } = useUserRole();
+  const navigate = useNavigate();
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    navigate("/login");
+    setUserRole("");
+  };
 
   return (
     <nav className="bg-gray-800 p-4">
@@ -59,14 +66,14 @@ const Navigation = () => {
             </div>
           </div>
           <div>
-            <NavLink
+            {/* <NavLink
               to="/logged-in"
               exact
               activeClassName="text-yellow-500 border-b-2 border-yellow-500"
               className="text-white text-lg px-4 py-2 hover:text-gray-300"
-            >
-              Logout
-            </NavLink>
+            > */}
+              <button onClick={handleLogout}>Logout</button>
+            {/* </NavLink> */}
           </div>
         </div>
       </div>

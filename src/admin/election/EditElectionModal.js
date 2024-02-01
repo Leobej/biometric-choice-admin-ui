@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-
+import Select from "react-select";
 const EditElectionModal = ({
   isOpen,
   closeModal,
@@ -14,12 +14,50 @@ const EditElectionModal = ({
   const [locations, setLocations] = useState([]);
   const [endDate, setEndDate] = useState("");
   const [candidates, setCandidates] = useState([]);
+  const [isAllSelected, setIsAllSelected] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [devices, setDevices] = useState([]);
+  const [selectedDevices, setSelectedDevices] = useState([]);
+  const [selectAll, setSelectAll] = useState(false);
   const [selectedCandidates, setSelectedCandidates] = useState(
     election.candidates || []
   );
+  const [deviceOptions, setDeviceOptions] = useState([]);
 
   console.log(election);
+
+  const toggleSelectAll = () => {
+    setIsAllSelected((currentIsAllSelected) => {
+      const newSelectedDevices = !currentIsAllSelected
+        ? deviceOptions.map((option) => option.value)
+        : [];
+      setSelectedDevices(newSelectedDevices);
+      return !currentIsAllSelected;
+    });
+  };
+
+  useEffect(() => {
+    const fetchDevices = async () => {
+      const token = localStorage.getItem("token");
+      try {
+        const response = await axios.get(`http://localhost:8080/devices`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        console.log("Fetched devices:", response.data);
+        const options = response.data.content.map((device) => ({
+          value: device.id,
+          label: `${device.name} (${device.type})`,
+        }));
+        setDeviceOptions(options);
+      } catch (error) {
+        console.error("Error fetching devices:", error);
+      }
+    };
+
+    if (isOpen) {
+      fetchDevices();
+    }
+  }, [isOpen]);
 
   useEffect(() => {
     setDescription(election.description);
@@ -76,6 +114,7 @@ const EditElectionModal = ({
       endDate,
       candidates: selectedCandidates,
       locationId: location,
+      active:true
     };
 
     try {
@@ -87,6 +126,17 @@ const EditElectionModal = ({
           Authorization: `Bearer ${token}`,
         },
       });
+
+      console.log("Updated election devices:");
+      console.log(selectedDevices);
+
+      await axios.put(
+        `http://localhost:8080/election-devices/edit/${election.electionId}`,
+        selectedDevices, // Directly sending the array
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
 
       showNotification("Election updated successfully", "success");
       fetchElections();
@@ -111,10 +161,38 @@ const EditElectionModal = ({
       }
     };
 
+    const fetchElectionDevices = async () => {
+      const token = localStorage.getItem("token");
+      try {
+        const response = await axios.get(
+          `http://localhost:8080/election-devices/election/${election.electionId}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+        console.log("Fetched election devices:", response.data);
+        // Assuming the response contains an array of devices
+        setSelectedDevices(response.data.map((device) => device.id));
+      } catch (error) {
+        console.error("Error fetching election devices:", error);
+      }
+    };
+
     if (isOpen) {
+    
+      fetchElectionDevices();
       fetchLocations();
     }
-  }, [isOpen]);
+  }, [isOpen, election.electionId]);
+
+  useEffect(() => {
+    setDeviceOptions(
+      devices.map((device) => ({
+        value: device.id,
+        label: `${device.name} (${device.type})`,
+      }))
+    );
+  }, [devices]);
 
   const handleCandidateClick = (candidate) => {
     const isAlreadySelected = selectedCandidates.some(
@@ -212,6 +290,38 @@ const EditElectionModal = ({
                     </li>
                   ))}
                 </ul>
+              </div>
+              <div className="mt-4">
+                <label className="block text-gray-700">Devices:</label>
+                <div className="flex items-center mb-6">
+                  <button
+                    type="button"
+                    class="text-gray-900 bg-white border border-gray-300 focus:outline-none hover:bg-gray-100
+                   focus:ring-4 focus:ring-gray-200 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-gray-800 dark:text-white
+                    dark:border-gray-600 dark:hover:bg-gray-700 dark:hover:border-gray-600 dark:focus:ring-gray-700"
+                    onClick={toggleSelectAll}
+                  >
+                    {isAllSelected ? "Deselect All" : "Select All"}
+                  </button>
+                </div>
+                <div className="relative">
+                  <Select
+                    options={deviceOptions}
+                    isMulti
+                    value={deviceOptions.filter((option) =>
+                      selectedDevices.includes(option.value)
+                    )}
+                    onChange={(selectedOptions) => {
+                      const deviceIds = selectedOptions.map(
+                        (option) => option.value
+                      );
+                      setSelectedDevices(deviceIds);
+                    }}
+                    className="basic-multi-select h-40 overflow-auto"
+                    classNamePrefix="select"
+                  />
+                  <div className="absolute top-0 right-0 h-10 w-10 bg-white" />
+                </div>
               </div>
               <div className="mt-4">
                 <label htmlFor="startDate" className="block text-gray-700">

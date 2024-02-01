@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import axios from "axios";
+import { useEffect } from "react";
 const AddDeviceModal = ({
   isOpen,
   closeModal,
@@ -9,6 +10,27 @@ const AddDeviceModal = ({
   const [name, setName] = useState("");
   const [type, setType] = useState("");
   const [status, setStatus] = useState("");
+  const [location, setLocation] = useState("");
+  const [locations, setLocations] = useState([]);
+
+  useEffect(() => {
+    const fetchLocations = async () => {
+      const token = localStorage.getItem("token");
+      try {
+        const response = await axios.get(`http://localhost:8080/locations`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        console.log("Fetched locations:", response.data); 
+        setLocations(response.data.content); 
+      } catch (error) {
+        console.error("Error fetching locations:", error);
+      }
+    };
+
+    if (isOpen) {
+      fetchLocations();
+    }
+  }, [isOpen]);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -20,7 +42,7 @@ const AddDeviceModal = ({
       const token = localStorage.getItem("token");
       const response = await axios.post(
         `http://localhost:8080/devices`,
-        { name, type, status },
+        { name, type, status, locationId: location},
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -31,6 +53,7 @@ const AddDeviceModal = ({
       if (response.status === 200 || response.status === 201) {
         showNotification("Device added successfully", "success");
         refreshDevices();
+        resetForm();
         closeModal();
       } else {
         // Handle other successful statuses if necessary
@@ -40,8 +63,15 @@ const AddDeviceModal = ({
       showNotification("Error adding device. Please try again.", "error");
     }
   };
+  const resetForm = () => {
+    setName("");
+    setType("");
+    setStatus("");
+    setLocation("");
+  };
 
   if (!isOpen) {
+    
     return null;
   }
 
@@ -89,6 +119,7 @@ const AddDeviceModal = ({
                   </select>
                 </label>
               </div>
+
               <div className="mt-4">
                 <label className="block">
                   <span className="text-gray-700">Device Status</span>
@@ -102,6 +133,26 @@ const AddDeviceModal = ({
                     <option value="Inactive">Inactive</option>
                   </select>
                 </label>
+              </div>
+              <div className="mt-4">
+                <label htmlFor="location" className="block text-gray-700">
+                  Location:
+                </label>
+                <select
+                  id="location"
+                  name="location"
+                  value={location}
+                  onChange={(e) => setLocation(e.target.value)}
+                  required
+                  className="form-select mt-1 block w-full"
+                >
+                  <option value="">Select a location</option>
+                  {locations.map((loc) => (
+                    <option key={loc.locationId} value={loc.locationId}>
+                      {loc.city}, {loc.street}
+                    </option>
+                  ))}
+                </select>
               </div>
             </div>
             <div className="px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
