@@ -71,6 +71,7 @@ const handleSubmit = async (event) => {
     }
   } catch (error) {
     console.log(error);
+    setError(" Invalid email or password");
   }
 };
 

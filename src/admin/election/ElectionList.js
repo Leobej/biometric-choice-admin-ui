@@ -73,7 +73,6 @@ const ElectionsList = () => {
 
   const fields = [
     { label: "Description", key: "description" },
-    { label: "Created at", key: "createdAt" },
     { label: "Start at", key: "startDate" },
     { label: "End at", key: "endDate" },
     {
@@ -148,7 +147,7 @@ const ElectionsList = () => {
           };
         })
       );
-
+      
       setElections(electionsWithLocation);
       setTotalPages(response.data.totalPages);
       setCurrentPage(page);
