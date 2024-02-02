@@ -44,18 +44,18 @@ const ElectionsList = () => {
     return currentDate > endDate;
   };
 
-const onEditClick = () => {
-  if (selectedElection) {
-    if (isDatePast(selectedElection.endDate)) {
-      alert("Editing not allowed. This election has already ended.");
+  const onEditClick = () => {
+    if (selectedElection) {
+      if (isDatePast(selectedElection.endDate)) {
+        alert("Editing not allowed. This election has already ended.");
+      } else {
+        setModalType("edit");
+        setIsModalOpen(true);
+      }
     } else {
-      setModalType("edit");
-      setIsModalOpen(true);
+      alert("Please select an election to edit.");
     }
-  } else {
-    alert("Please select an election to edit.");
-  }
-};
+  };
 
   const onDeleteClick = () => {
     if (selectedElection) {
@@ -70,7 +70,6 @@ const onEditClick = () => {
     setSearchQuery("");
     fetchElections();
   };
-  
 
   const fields = [
     { label: "Description", key: "description" },
@@ -120,6 +119,10 @@ const onEditClick = () => {
     }
   };
 
+  const formatDate = (dateString) => {
+    return dateString.replace("T", " ");
+  };
+
   const fetchElections = async (page = 0, size = 10, searchQuery = "") => {
     const token = localStorage.getItem("token");
     try {
@@ -135,7 +138,14 @@ const onEditClick = () => {
           const locationDetails = await fetchLocationDetails(
             election.locationId
           );
-          return { ...election, locationDetails };
+          const formattedStartDate = formatDate(election.startDate);
+          const formattedEndDate = formatDate(election.endDate);
+          return {
+            ...election,
+            locationDetails,
+            startDate: formattedStartDate,
+            endDate: formattedEndDate,
+          };
         })
       );
 
